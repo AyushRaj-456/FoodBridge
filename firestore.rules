@@ -138,7 +138,13 @@ service cloud.firestore {
          request.resource.data.activeClaimId != null &&
          request.time <= resource.data.consumeBy &&
          request.time <= resource.data.pickupEnd) ||
-        // Case 3: Admin moderation
+        // Case 3: Handover completion, cancellation or dispute on active claimed listing
+        (resource.data.status == 'claimed' &&
+         (isOrgMember(resource.data.donorOrgId) ||
+          (exists(/databases/$(database)/documents/claims/$(resource.data.activeClaimId)) &&
+           isOrgMember(get(/databases/$(database)/documents/claims/$(resource.data.activeClaimId)).data.recipientOrgId))) &&
+         request.resource.data.status in ['completed', 'published', 'cancelled', 'disputed']) ||
+        // Case 4: Admin moderation
         isAdmin()
       );
 

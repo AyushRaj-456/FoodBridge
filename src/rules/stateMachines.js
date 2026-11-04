@@ -6,7 +6,7 @@
 export const LISTING_TRANSITIONS = {
   draft: ['published', 'withdrawn'],
   published: ['claimed', 'withdrawn', 'expired'],
-  claimed: ['handover_pending', 'cancelled', 'disputed'],
+  claimed: ['handover_pending', 'completed', 'cancelled', 'disputed'],
   handover_pending: ['completed', 'cancelled', 'disputed'],
   completed: [], // Terminal state
   withdrawn: [], // Terminal state
