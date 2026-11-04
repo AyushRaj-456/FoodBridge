@@ -127,9 +127,9 @@ service cloud.firestore {
         // Case 1: Donor updates own draft/published listing
         (isOrgMember(resource.data.donorOrgId) &&
          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-           'title', 'category', 'quantity', 'unit', 'preparedAt', 'consumeBy',
+           'title', 'category', 'quantity', 'unit', 'portions', 'preparedAt', 'consumeBy',
            'pickupStart', 'pickupEnd', 'storageDeclaration', 'dietType',
-           'allergens', 'location', 'geohash', 'routeTier', 'status', 'updatedAt'
+           'allergens', 'location', 'geohash', 'routeTier', 'status', 'withdrawalReason', 'updatedAt'
          ])) ||
         // Case 2: Claim allocation: status transition to claimed with unexpired deadline
         (resource.data.status == 'published' &&

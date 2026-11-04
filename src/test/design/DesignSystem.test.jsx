@@ -200,9 +200,7 @@ describe('Design System & Page Inventory — Calm Civic Utility', () => {
       const leftoverInput = screen.getByLabelText(/Unserved Leftover/i);
       fireEvent.change(leftoverInput, { target: { value: '0' } });
 
-      const form = screen
-        .getByRole('button', { name: /Save Production Record/i })
-        .closest('form');
+      const form = screen.getByRole('button', { name: /Save Production Record/i }).closest('form');
       fireEvent.submit(form);
 
       expect(screen.getByText(/All quantities must be non-negative numbers/i)).toBeDefined();
