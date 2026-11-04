@@ -100,6 +100,18 @@
   color: var(--color-text);
 }
 
+.btn-clickable {
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.btn-clickable:hover {
+  background-color: var(--color-brand-100);
+  border-color: var(--color-brand-700);
+}
+
 @media (max-width: 768px) {
   .header-inner {
     padding: 0 var(--gutter-mobile);

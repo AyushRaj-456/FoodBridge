@@ -1,5 +1,10 @@
+import { AuthProvider } from '../features/auth/AuthContext.jsx';
 import AppShell from './AppShell.jsx';
 
 export default function App() {
-  return <AppShell />;
+  return (
+    <AuthProvider>
+      <AppShell />
+    </AuthProvider>
+  );
 }

@@ -8,6 +8,9 @@ import FeedShell from '../features/matching/FeedShell.jsx';
 import MessShell from '../features/mess-analytics/MessShell.jsx';
 import AdminShell from '../features/admin/AdminShell.jsx';
 import InfoView from '../features/common/InfoView.jsx';
+import AuthModal from '../features/auth/AuthModal.jsx';
+import UserProfileModal from '../features/auth/UserProfileModal.jsx';
+import AccountStateBanner from '../features/auth/AccountStateBanner.jsx';
 import './AppShell.css';
 
 const DEFAULT_TABS_FOR_ROLE = {
@@ -21,6 +24,8 @@ export default function AppShell() {
   const [currentRole, setCurrentRole] = useState('donor');
   const [activeTab, setActiveTab] = useState(DEFAULT_TABS_FOR_ROLE.donor);
   const [unreadNotifications] = useState(2);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
 
   const handleRoleChange = (newRole) => {
     setCurrentRole(newRole);
@@ -55,9 +60,12 @@ export default function AppShell() {
         currentRole={currentRole}
         onRoleChange={handleRoleChange}
         unreadNotifications={unreadNotifications}
+        onOpenAuth={() => setAuthModalOpen(true)}
+        onOpenProfile={() => setProfileModalOpen(true)}
       />
 
       <StatusBanner role={currentRole} />
+      <AccountStateBanner />
 
       <div className="app-body">
         <Sidebar currentRole={currentRole} activeTab={activeTab} onSelectTab={setActiveTab} />
@@ -68,6 +76,10 @@ export default function AppShell() {
       </div>
 
       <BottomNav currentRole={currentRole} activeTab={activeTab} onSelectTab={setActiveTab} />
+
+      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
+
+      <UserProfileModal isOpen={profileModalOpen} onClose={() => setProfileModalOpen(false)} />
     </div>
   );
 }

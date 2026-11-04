@@ -1,10 +1,12 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import App from './App.jsx';
 
 describe('FoodBridge App Shell — ₹0 Spark Baseline', () => {
-  it('renders the brand name, skip link, and Spark ₹0 status banner', () => {
-    render(<App />);
+  it('renders the brand name, skip link, and Spark ₹0 status banner', async () => {
+    await act(async () => {
+      render(<App />);
+    });
 
     // Brand title
     expect(screen.getAllByText('FoodBridge').length).toBeGreaterThan(0);
@@ -19,8 +21,10 @@ describe('FoodBridge App Shell — ₹0 Spark Baseline', () => {
     expect(screen.getByText(/Strict zero-cost contract active/i)).toBeInTheDocument();
   });
 
-  it('renders default Donor view on initial load', () => {
-    render(<App />);
+  it('renders default Donor view on initial load', async () => {
+    await act(async () => {
+      render(<App />);
+    });
 
     expect(
       screen.getByRole('heading', { level: 1, name: /Donor Operations/i })
@@ -28,12 +32,16 @@ describe('FoodBridge App Shell — ₹0 Spark Baseline', () => {
     expect(screen.getByText(/Viewing as:/i)).toHaveTextContent('Donor Member');
   });
 
-  it('switches views when role switcher buttons are clicked', () => {
-    render(<App />);
+  it('switches views when role switcher buttons are clicked', async () => {
+    await act(async () => {
+      render(<App />);
+    });
 
     // Switch to Recipient
     const recipientBtn = screen.getByRole('button', { name: 'Recipient NGO' });
-    fireEvent.click(recipientBtn);
+    await act(async () => {
+      fireEvent.click(recipientBtn);
+    });
     expect(
       screen.getByRole('heading', { level: 1, name: /Verified Recipient Feed/i })
     ).toBeInTheDocument();
@@ -41,7 +49,9 @@ describe('FoodBridge App Shell — ₹0 Spark Baseline', () => {
 
     // Switch to Mess Operator
     const messBtn = screen.getByRole('button', { name: 'Mess Operator' });
-    fireEvent.click(messBtn);
+    await act(async () => {
+      fireEvent.click(messBtn);
+    });
     expect(
       screen.getByRole('heading', { level: 1, name: /Mess Waste & Production Records/i })
     ).toBeInTheDocument();
@@ -49,18 +59,24 @@ describe('FoodBridge App Shell — ₹0 Spark Baseline', () => {
 
     // Switch to Admin
     const adminBtn = screen.getByRole('button', { name: 'Admin' });
-    fireEvent.click(adminBtn);
+    await act(async () => {
+      fireEvent.click(adminBtn);
+    });
     expect(
       screen.getByRole('heading', { level: 1, name: /Administrative & Moderation Console/i })
     ).toBeInTheDocument();
     expect(screen.getByText(/Viewing as:/i)).toHaveTextContent('Administrator');
   });
 
-  it('renders privacy notice when clicking sidebar compliance link', () => {
-    render(<App />);
+  it('renders privacy notice when clicking sidebar compliance link', async () => {
+    await act(async () => {
+      render(<App />);
+    });
 
     const privacyBtn = screen.getByRole('button', { name: /Privacy & Retention/i });
-    fireEvent.click(privacyBtn);
+    await act(async () => {
+      fireEvent.click(privacyBtn);
+    });
 
     expect(
       screen.getByRole('heading', { level: 1, name: /Privacy, Retention & Data Minimisation/i })
