@@ -6,6 +6,7 @@ import {
   Lock,
   Building,
   ShieldAlert,
+  ShieldCheck,
   Clock,
   Truck,
   HeartHandshake,
@@ -17,6 +18,7 @@ import StatusBadge from '../../components/common/StatusBadge.jsx';
 import EmptyState from '../../components/common/EmptyState.jsx';
 import MapView from '../location/MapView.jsx';
 import { DEFAULT_CAMPUS_LANDMARKS } from '../location/locationService.js';
+import { RADIUS_BANDS_KM } from './matchingService.js';
 
 const SAMPLE_SURPLUS_OPPORTUNITIES = [
   {
@@ -116,6 +118,12 @@ export default function FeedShell({ activeTab, initialOrgStatus = 'pending' }) {
     confirmed: false,
   });
 
+  const [selectedRadius, setSelectedRadius] = useState(5);
+  const [recipientCapacity] = useState({
+    maxPortionsPerClaim: 80,
+    dailyCapacityMeals: 200,
+  });
+
   const isEligibleToClaim = canRecipientClaim(recipientOrgStatus);
 
   const handleClaim = (opp) => {
@@ -139,8 +147,13 @@ export default function FeedShell({ activeTab, initialOrgStatus = 'pending' }) {
   };
 
   const filteredOpportunities = SAMPLE_SURPLUS_OPPORTUNITIES.filter((opp) => {
-    if (dietFilter === 'all') return true;
-    return opp.dietType.toLowerCase() === dietFilter.toLowerCase();
+    if (dietFilter !== 'all' && opp.dietType.toLowerCase() !== dietFilter.toLowerCase()) {
+      return false;
+    }
+    if (opp.distanceKm > selectedRadius) {
+      return false;
+    }
+    return true;
   });
 
   return (
@@ -234,6 +247,21 @@ export default function FeedShell({ activeTab, initialOrgStatus = 'pending' }) {
                 <option value="vegan">Vegan Only</option>
               </select>
 
+              {/* Radius Expansion Selector */}
+              <select
+                aria-label="Filter by Search Radius"
+                value={selectedRadius}
+                onChange={(e) => setSelectedRadius(Number(e.target.value))}
+                className="input-field"
+                style={{ width: 'auto', padding: '2px 8px', minHeight: '32px' }}
+              >
+                {RADIUS_BANDS_KM.map((r) => (
+                  <option key={r} value={r}>
+                    Radius: {r} km
+                  </option>
+                ))}
+              </select>
+
               {/* Status Simulation Tool for Dev / Testing */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                 <Building size={14} className="text-muted" />
@@ -255,6 +283,30 @@ export default function FeedShell({ activeTab, initialOrgStatus = 'pending' }) {
                 </select>
               </div>
             </div>
+          </div>
+
+          {/* Radius Expansion Policy & Safety Invariant Banner */}
+          <div
+            className="notice-box"
+            style={{
+              marginTop: 'var(--space-3)',
+              padding: 'var(--space-2) var(--space-3)',
+              background: 'var(--color-canvas)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: 'var(--font-size-caption)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--space-2)',
+            }}
+          >
+            <ShieldCheck size={16} color="var(--color-brand-700)" style={{ flexShrink: 0 }} />
+            <span>
+              <strong>Radius Expansion Safety Policy:</strong> Expanding discovery radius (
+              {selectedRadius} km) broadens geographic reach but never relaxes recipient approval,
+              capacity constraints (~{recipientCapacity.maxPortionsPerClaim} portions), or
+              food-safety deadlines.
+            </span>
           </div>
 
           {/* Proximity Map & Proximity Fallback View */}
