@@ -1,0 +1,255 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ==========================================
+    // HELPER FUNCTIONS & SECURITY PREDICATES
+    // ==========================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Admin role is console-provisioned; checked via existence of admins doc
+    function isAdmin() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function getMembership(orgId) {
+      return get(/databases/$(database)/documents/memberships/$(orgId + "_" + request.auth.uid)).data;
+    }
+
+    function isOrgMember(orgId) {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/memberships/$(orgId + "_" + request.auth.uid)) &&
+        getMembership(orgId).status == 'active';
+    }
+
+    function isOrgRole(orgId, role) {
+      return isOrgMember(orgId) && getMembership(orgId).role == role;
+    }
+
+    function getOrg(orgId) {
+      return get(/databases/$(database)/documents/organisations/$(orgId)).data;
+    }
+
+    function isApprovedOrg(orgId) {
+      return exists(/databases/$(database)/documents/organisations/$(orgId)) &&
+        getOrg(orgId).status == 'approved';
+    }
+
+    // ==========================================
+    // USERS COLLECTION
+    // ==========================================
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      // Users can register their own profile; cannot self-promote to admin or approved status
+      allow create: if isOwner(userId) &&
+        request.resource.data.email == request.auth.token.email &&
+        (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false) &&
+        request.resource.data.status == 'pending';
+      // Restrict updatable profile fields
+      allow update: if isOwner(userId) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'photoURL', 'updatedAt']) &&
+        (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == resource.data.isAdmin);
+      allow delete: if false;
+    }
+
+    // ==========================================
+    // ADMINS COLLECTION (Console-Provisioned Only)
+    // ==========================================
+    match /admins/{userId} {
+      allow read: if isAuthenticated();
+      // Client writes strictly forbidden; only Firebase Console can write
+      allow write: if false;
+    }
+
+    // ==========================================
+    // ORGANISATIONS COLLECTION
+    // ==========================================
+    match /organisations/{orgId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+        request.resource.data.createdBy == request.auth.uid &&
+        request.resource.data.status == 'pending';
+      // Only admin can update organisation approval status
+      allow update: if isAdmin() || (
+        isOrgMember(orgId) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'addressText', 'updatedAt'])
+      );
+      allow delete: if false;
+    }
+
+    // ==========================================
+    // MEMBERSHIPS COLLECTION: {orgId}_{uid}
+    // ==========================================
+    match /memberships/{membershipId} {
+      allow read: if isAuthenticated() && (
+        resource.data.uid == request.auth.uid ||
+        isOrgMember(resource.data.orgId) ||
+        isAdmin()
+      );
+      // Users can create a pending membership request for themselves
+      allow create: if isAuthenticated() &&
+        request.resource.data.uid == request.auth.uid &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.role == 'member';
+      // Status and role changes require admin or verified org admin
+      allow update: if isAdmin() || (
+        isOrgRole(resource.data.orgId, 'admin') &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role', 'status'])
+      );
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================
+    // LISTINGS COLLECTION
+    // ==========================================
+    match /listings/{listingId} {
+      // Coarse listings read permitted for eligible authenticated users
+      allow read: if isAuthenticated();
+      
+      // Donors create listings for approved donor orgs
+      allow create: if isAuthenticated() &&
+        isOrgMember(request.resource.data.donorOrgId) &&
+        isApprovedOrg(request.resource.data.donorOrgId) &&
+        request.resource.data.createdBy == request.auth.uid &&
+        request.resource.data.status in ['draft', 'published'] &&
+        request.resource.data.activeClaimId == null;
+
+      // Donors manage own listings; recipient can set claimed during atomic claim
+      allow update: if isAuthenticated() && (
+        // Case 1: Donor updates own draft/published listing
+        (isOrgMember(resource.data.donorOrgId) &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+           'title', 'category', 'quantity', 'unit', 'preparedAt', 'consumeBy',
+           'pickupStart', 'pickupEnd', 'storageDeclaration', 'dietType',
+           'allergens', 'location', 'geohash', 'routeTier', 'status', 'updatedAt'
+         ])) ||
+        // Case 2: Claim allocation: status transition to claimed with unexpired deadline
+        (resource.data.status == 'published' &&
+         resource.data.activeClaimId == null &&
+         request.resource.data.status == 'claimed' &&
+         request.resource.data.activeClaimId != null &&
+         request.time <= resource.data.consumeBy &&
+         request.time <= resource.data.pickupEnd) ||
+        // Case 3: Admin moderation
+        isAdmin()
+      );
+
+      allow delete: if false; // Soft deactivation only
+
+      // Subcollection for exact pickup details (Field-Level Privacy Partition)
+      match /fulfillment/{docId} {
+        allow read: if isAuthenticated() && (
+          isOrgMember(get(/databases/$(database)/documents/listings/$(listingId)).data.donorOrgId) ||
+          isAdmin() ||
+          (
+            get(/databases/$(database)/documents/listings/$(listingId)).data.activeClaimId != null &&
+            exists(/databases/$(database)/documents/claims/$(get(/databases/$(database)/documents/listings/$(listingId)).data.activeClaimId)) &&
+            isOrgMember(get(/databases/$(database)/documents/claims/$(get(/databases/$(database)/documents/listings/$(listingId)).data.activeClaimId)).data.recipientOrgId)
+        );
+        allow write: if isOrgMember(get(/databases/$(database)/documents/listings/$(listingId)).data.donorOrgId) || isAdmin();
+      }
+    }
+
+    // ==========================================
+    // CLAIMS COLLECTION
+    // ==========================================
+    match /claims/{claimId} {
+      allow read: if isAuthenticated() && (
+        resource.data.claimedBy == request.auth.uid ||
+        isOrgMember(resource.data.recipientOrgId) ||
+        isOrgMember(get(/databases/$(database)/documents/listings/$(resource.data.listingId)).data.donorOrgId) ||
+        isAdmin()
+      );
+
+      // Claim creation by approved recipient org member
+      allow create: if isAuthenticated() &&
+        isApprovedOrg(request.resource.data.recipientOrgId) &&
+        isOrgMember(request.resource.data.recipientOrgId) &&
+        request.resource.data.claimedBy == request.auth.uid &&
+        request.resource.data.status == 'claimed' &&
+        exists(/databases/$(database)/documents/listings/$(request.resource.data.listingId)) &&
+        request.time <= get(/databases/$(database)/documents/listings/$(request.resource.data.listingId)).data.consumeBy;
+
+      // Status updates during dual confirmation handover
+      allow update: if isAuthenticated() && (
+        isOrgMember(resource.data.recipientOrgId) ||
+        isOrgMember(get(/databases/$(database)/documents/listings/$(resource.data.listingId)).data.donorOrgId) ||
+        isAdmin()
+      );
+
+      allow delete: if false;
+    }
+
+    // ==========================================
+    // MESS RECORDS COLLECTION
+    // ==========================================
+    match /messRecords/{recordId} {
+      allow read: if isAuthenticated() && (
+        isOrgMember(resource.data.orgId) ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated() &&
+        isOrgMember(request.resource.data.orgId) &&
+        request.resource.data.preparedQty >= 0 &&
+        request.resource.data.leftoverQty >= 0;
+      allow update: if isAuthenticated() && isOrgMember(resource.data.orgId);
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================
+    // NOTIFICATIONS COLLECTION (In-App Only)
+    // ==========================================
+    match /notifications/{notificationId} {
+      allow read: if isOwner(resource.data.userId);
+      allow create: if isAuthenticated();
+      allow update: if isOwner(resource.data.userId) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readAt']);
+      allow delete: if isOwner(resource.data.userId);
+    }
+
+    // ==========================================
+    // REPORTS & AUDIT COLLECTIONS
+    // ==========================================
+    match /reports/{reportId} {
+      allow read: if isAuthenticated() && (
+        resource.data.reporterUid == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated() &&
+        request.resource.data.reporterUid == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    match /verificationReviews/{reviewId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /auditEvents/{eventId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated() &&
+        request.resource.data.actorUid == request.auth.uid &&
+        request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+
+    match /impactFactors/{factorId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // ==========================================
+    // DEFAULT DENY-BY-DEFAULT
+    // ==========================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
