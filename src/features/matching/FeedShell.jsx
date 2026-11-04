@@ -15,6 +15,8 @@ import {
 import { canRecipientClaim } from '../organisations/orgService.js';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
 import EmptyState from '../../components/common/EmptyState.jsx';
+import MapView from '../location/MapView.jsx';
+import { DEFAULT_CAMPUS_LANDMARKS } from '../location/locationService.js';
 
 const SAMPLE_SURPLUS_OPPORTUNITIES = [
   {
@@ -25,6 +27,8 @@ const SAMPLE_SURPLUS_OPPORTUNITIES = [
     unit: 'kg',
     portions: 55,
     distanceKm: 1.2,
+    lat: 13.0827,
+    lng: 80.2707,
     consumeBy: '23:00',
     pickupStart: '20:30',
     pickupEnd: '22:00',
@@ -43,6 +47,8 @@ const SAMPLE_SURPLUS_OPPORTUNITIES = [
     unit: 'kg',
     portions: 35,
     distanceKm: 2.4,
+    lat: 13.0862,
+    lng: 80.2751,
     consumeBy: '22:30',
     pickupStart: '21:00',
     pickupEnd: '22:00',
@@ -96,6 +102,11 @@ export default function FeedShell({ activeTab, initialOrgStatus = 'pending' }) {
   const [dietFilter, setDietFilter] = useState('all');
   const [claims, setClaims] = useState(SAMPLE_ACTIVE_CLAIMS);
   const [claimSuccessMessage, setClaimSuccessMessage] = useState(null);
+  const [userLocation, setUserLocation] = useState({
+    lat: DEFAULT_CAMPUS_LANDMARKS[0].lat,
+    lng: DEFAULT_CAMPUS_LANDMARKS[0].lng,
+    name: DEFAULT_CAMPUS_LANDMARKS[0].name,
+  });
 
   // Handover confirmation state
   const [handoverDetails, setHandoverDetails] = useState({
@@ -244,6 +255,17 @@ export default function FeedShell({ activeTab, initialOrgStatus = 'pending' }) {
                 </select>
               </div>
             </div>
+          </div>
+
+          {/* Proximity Map & Proximity Fallback View */}
+          <div style={{ marginTop: 'var(--space-4)' }}>
+            <MapView
+              opportunities={filteredOpportunities}
+              userLocation={userLocation}
+              onUserLocationChange={setUserLocation}
+              onSelectOpportunity={handleClaim}
+              isEligibleToClaim={isEligibleToClaim}
+            />
           </div>
 
           <div
