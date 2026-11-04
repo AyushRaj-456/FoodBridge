@@ -1,48 +1,132 @@
-import { useState } from 'react';
-import { Calendar, TrendingUp, Lightbulb, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import {
+  Calendar,
+  TrendingUp,
+  Lightbulb,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  Scale,
+  Eye,
+  Info,
+  ChevronLeft,
+  ChevronRight,
+  Layers,
+} from 'lucide-react';
+import { useAuth } from '../auth/useAuth.js';
+import {
+  MEASUREMENT_METHODS,
+  createMessRecord,
+  fetchMessRecordsPaginated,
+  computeMessAnalytics,
+} from './messService.js';
 
-const SAMPLE_MEAL_RECORDS = [
+// Baseline seed data when offline or prior to live organisation logging
+const INITIAL_DEMO_RECORDS = [
   {
     id: 'rec-01',
+    orgId: 'org-campus-mess',
     mealDate: '2026-11-04',
-    mealType: 'Lunch',
+    mealType: 'lunch',
     dishName: 'Yellow Dal & Jeera Rice',
     preparedQty: 120.0,
+    preparedMethod: 'measured',
     servedQty: 104.5,
+    servedMethod: 'measured',
     leftoverQty: 15.5,
+    leftoverMethod: 'measured',
     unit: 'kg',
     peopleServed: 320,
+    peopleMethod: 'measured',
     enteredBy: 'Operator Sharma',
   },
   {
     id: 'rec-02',
+    orgId: 'org-campus-mess',
     mealDate: '2026-11-04',
-    mealType: 'Breakfast',
+    mealType: 'breakfast',
     dishName: 'Poha & Masala Chai',
     preparedQty: 65.0,
+    preparedMethod: 'measured',
     servedQty: 64.0,
+    servedMethod: 'measured',
     leftoverQty: 1.0,
+    leftoverMethod: 'measured',
     unit: 'kg',
     peopleServed: 280,
+    peopleMethod: 'measured',
     enteredBy: 'Operator Sharma',
   },
   {
     id: 'rec-03',
+    orgId: 'org-campus-mess',
     mealDate: '2026-11-03',
-    mealType: 'Dinner',
+    mealType: 'dinner',
     dishName: 'Mix Veg Curry & Rotis',
     preparedQty: 95.0,
+    preparedMethod: 'measured',
     servedQty: 82.0,
+    servedMethod: 'derived',
     leftoverQty: 13.0,
+    leftoverMethod: 'measured',
     unit: 'kg',
     peopleServed: 290,
+    peopleMethod: 'estimated',
     enteredBy: 'Supervisor Verma',
+  },
+  {
+    id: 'rec-04',
+    orgId: 'org-campus-mess',
+    mealDate: '2026-11-03',
+    mealType: 'lunch',
+    dishName: 'Rajma & Steamed Rice',
+    preparedQty: 110.0,
+    preparedMethod: 'measured',
+    servedQty: null, // Explicit missing data
+    servedMethod: null,
+    leftoverQty: 18.0,
+    leftoverMethod: 'measured',
+    unit: 'kg',
+    peopleServed: null, // Explicit missing headcount
+    peopleMethod: null,
+    enteredBy: 'Operator Sharma',
+    notes: 'Dinner rush; plate tally was not maintained.',
+  },
+  {
+    id: 'rec-05',
+    orgId: 'org-campus-mess',
+    mealDate: '2026-11-02',
+    mealType: 'dinner',
+    dishName: 'Paneer Butter Masala',
+    preparedQty: 80.0,
+    preparedMethod: 'estimated',
+    servedQty: 74.0,
+    servedMethod: 'derived',
+    leftoverQty: 6.0,
+    leftoverMethod: 'estimated',
+    unit: 'kg',
+    peopleServed: 275,
+    peopleMethod: 'measured',
+    enteredBy: 'Operator Sharma',
   },
 ];
 
 export default function MessShell({ activeTab }) {
-  const [records, setRecords] = useState(SAMPLE_MEAL_RECORDS);
+  let user = null;
+  let profile = null;
+  try {
+    const auth = useAuth();
+    user = auth?.user || null;
+    profile = auth?.profile || null;
+  } catch {
+    // Graceful fallback when rendered outside of AuthProvider
+  }
+  const orgId = profile?.orgId || 'org-campus-mess';
+
+  const [records, setRecords] = useState(INITIAL_DEMO_RECORDS);
   const [filterMealType, setFilterMealType] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   // Form State
   const [formData, setFormData] = useState({
@@ -50,71 +134,247 @@ export default function MessShell({ activeTab }) {
     mealType: 'lunch',
     dishName: '',
     preparedQty: '',
+    preparedMethod: MEASUREMENT_METHODS.MEASURED,
     servedQty: '',
+    servedMethod: MEASUREMENT_METHODS.MEASURED,
     leftoverQty: '',
+    leftoverMethod: MEASUREMENT_METHODS.MEASURED,
     unit: 'kg',
     peopleServed: '',
+    peopleMethod: MEASUREMENT_METHODS.MEASURED,
+    notes: '',
   });
 
   const [formSuccess, setFormSuccess] = useState(null);
   const [formError, setFormError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    setFormError(null);
+  // Try fetching live records from Firestore if user has active org
+  useEffect(() => {
+    let isMounted = true;
+    async function loadLiveRecords() {
+      if (!user?.uid || !profile?.orgId) return;
+      try {
+        const { records: liveRecords } = await fetchMessRecordsPaginated({
+          orgId: profile.orgId,
+          pageSize: 25,
+        });
+        if (isMounted && liveRecords.length > 0) {
+          setRecords(liveRecords);
+        }
+      } catch (err) {
+        // Fallback to local records on emulator disconnect or permission check
+        console.warn('Mess records fetch fallback:', err.message);
+      }
+    }
+    loadLiveRecords();
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.uid, profile?.orgId]);
 
+  // Derive helper calculations
+  const handleAutoDeriveLeftover = () => {
     const prep = parseFloat(formData.preparedQty);
     const served = parseFloat(formData.servedQty);
-    const leftover = parseFloat(formData.leftoverQty);
-    const people = parseInt(formData.peopleServed, 10);
-
-    if (isNaN(prep) || prep < 0 || isNaN(served) || served < 0 || isNaN(leftover) || leftover < 0) {
-      setFormError('All quantities must be non-negative numbers (0 or greater).');
-      return;
+    if (!isNaN(prep) && !isNaN(served) && prep >= served) {
+      setFormData((prev) => ({
+        ...prev,
+        leftoverQty: (prep - served).toFixed(1),
+        leftoverMethod: MEASUREMENT_METHODS.DERIVED,
+      }));
     }
-
-    if (served + leftover > prep * 1.1) {
-      setFormError(
-        'The sum of served and leftover quantities significantly exceeds the prepared amount. Please check the values.'
-      );
-      return;
-    }
-
-    const newRecord = {
-      id: `rec-${Date.now().toString().slice(-4)}`,
-      mealDate: formData.mealDate,
-      mealType: formData.mealType.charAt(0).toUpperCase() + formData.mealType.slice(1),
-      dishName: formData.dishName.trim(),
-      preparedQty: prep,
-      servedQty: served,
-      leftoverQty: leftover,
-      unit: formData.unit,
-      peopleServed: isNaN(people) ? null : people,
-      enteredBy: 'Operator Log',
-    };
-
-    setRecords((prev) => [newRecord, ...prev]);
-    setFormSuccess(`Meal record for "${newRecord.dishName}" successfully logged.`);
-    setFormData((prev) => ({
-      ...prev,
-      dishName: '',
-      preparedQty: '',
-      servedQty: '',
-      leftoverQty: '',
-      peopleServed: '',
-    }));
   };
 
-  const filteredRecords = records.filter((r) => {
-    if (filterMealType === 'all') return true;
-    return r.mealType.toLowerCase() === filterMealType.toLowerCase();
-  });
+  const handleAutoDeriveServed = () => {
+    const prep = parseFloat(formData.preparedQty);
+    const leftover = parseFloat(formData.leftoverQty);
+    if (!isNaN(prep) && !isNaN(leftover) && prep >= leftover) {
+      setFormData((prev) => ({
+        ...prev,
+        servedQty: (prep - leftover).toFixed(1),
+        servedMethod: MEASUREMENT_METHODS.DERIVED,
+      }));
+    }
+  };
 
-  // Calculate Metrics
-  const totalPrepared = records.reduce((acc, r) => acc + r.preparedQty, 0);
-  const totalServed = records.reduce((acc, r) => acc + r.servedQty, 0);
-  const totalLeftover = records.reduce((acc, r) => acc + r.leftoverQty, 0);
-  const surplusPct = totalPrepared > 0 ? ((totalLeftover / totalPrepared) * 100).toFixed(1) : 0;
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    setFormError(null);
+    setFormSuccess(null);
+    setIsSubmitting(true);
+
+    try {
+      const prepNum = parseFloat(formData.preparedQty);
+      const leftoverNum = parseFloat(formData.leftoverQty);
+      const servedNum = formData.servedQty !== '' ? parseFloat(formData.servedQty) : null;
+      const peopleNum = formData.peopleServed !== '' ? parseInt(formData.peopleServed, 10) : null;
+
+      if (
+        isNaN(prepNum) ||
+        prepNum < 0 ||
+        isNaN(leftoverNum) ||
+        leftoverNum < 0 ||
+        (servedNum !== null && (isNaN(servedNum) || servedNum < 0))
+      ) {
+        throw new Error('All quantities must be non-negative numbers (0 or greater).');
+      }
+      if (peopleNum !== null && (isNaN(peopleNum) || peopleNum < 0)) {
+        throw new Error('People served must be a non-negative whole number or left blank.');
+      }
+
+      // Check sum constraint when both are measured
+      if (servedNum !== null && servedNum + leftoverNum > prepNum * 1.15) {
+        throw new Error(
+          'Physical inconsistency: The sum of served and leftover exceeds prepared quantity by more than 15%. Please verify scale readings.'
+        );
+      }
+
+      const activeUser = user || {
+        uid: 'demo-mess-op',
+        displayName: 'Mess Operator (Local)',
+        email: 'operator@campus.edu',
+      };
+
+      let newRecord;
+      try {
+        const result = await createMessRecord({
+          orgId,
+          user: activeUser,
+          mealDate: formData.mealDate,
+          mealType: formData.mealType,
+          dishName: formData.dishName,
+          preparedQty: prepNum,
+          preparedMethod: formData.preparedMethod,
+          servedQty: servedNum,
+          servedMethod: servedNum !== null ? formData.servedMethod : null,
+          leftoverQty: leftoverNum,
+          leftoverMethod: formData.leftoverMethod,
+          unit: formData.unit,
+          peopleServed: peopleNum,
+          peopleMethod: peopleNum !== null ? formData.peopleMethod : null,
+          notes: formData.notes,
+        });
+        newRecord = result.record;
+      } catch (dbErr) {
+        // If unauthenticated or offline, persist to local session state
+        console.warn('Firestore write bypassed, logging to local session:', dbErr.message);
+        newRecord = {
+          id: `rec-${Date.now().toString().slice(-4)}`,
+          orgId,
+          mealDate: formData.mealDate,
+          mealType: formData.mealType,
+          dishName: formData.dishName.trim(),
+          preparedQty: prepNum,
+          preparedMethod: formData.preparedMethod,
+          servedQty: servedNum,
+          servedMethod: servedNum !== null ? formData.servedMethod : null,
+          leftoverQty: leftoverNum,
+          leftoverMethod: formData.leftoverMethod,
+          unit: formData.unit,
+          peopleServed: peopleNum,
+          peopleMethod: peopleNum !== null ? formData.peopleMethod : null,
+          notes: formData.notes.trim(),
+          enteredBy: activeUser.displayName || 'Mess Operator',
+          createdAt: new Date().toISOString(),
+        };
+      }
+
+      setRecords((prev) => [newRecord, ...prev]);
+      setFormSuccess(
+        `Meal record for "${newRecord.dishName}" successfully logged. Missing fields stored as null (not zero).`
+      );
+
+      // Reset form
+      setFormData((prev) => ({
+        ...prev,
+        dishName: '',
+        preparedQty: '',
+        servedQty: '',
+        leftoverQty: '',
+        peopleServed: '',
+        notes: '',
+      }));
+    } catch (err) {
+      setFormError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Filter and Paginate Records
+  const filteredRecords = useMemo(() => {
+    return records.filter((r) => {
+      if (filterMealType === 'all') return true;
+      return (r.mealType || '').toLowerCase() === filterMealType.toLowerCase();
+    });
+  }, [records, filterMealType]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRecords.length / pageSize));
+  const paginatedRecords = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredRecords.slice(start, start + pageSize);
+  }, [filteredRecords, currentPage, pageSize]);
+
+  // Compute Descriptive Analytics
+  const analytics = useMemo(() => {
+    return computeMessAnalytics(records);
+  }, [records]);
+
+  // Primary unit metrics (e.g. kg)
+  const primaryUnitMetric = analytics.unitMetrics['kg'] ||
+    Object.values(analytics.unitMetrics)[0] || {
+      totalPrepared: 0,
+      totalServed: 0,
+      totalLeftover: 0,
+      surplusRate: 0,
+      unit: 'kg',
+    };
+
+  const perCapitaKg = analytics.perCapitaByUnit['kg'] || {
+    averagePerPerson: null,
+    validSampleCount: 0,
+  };
+
+  const getMethodBadge = (method) => {
+    switch (method) {
+      case 'measured':
+        return (
+          <span
+            className="badge badge-success"
+            title="Measured directly on kitchen scale / verified count"
+            style={{ fontSize: '10px', display: 'inline-flex', alignItems: 'center', gap: '2px' }}
+          >
+            <Scale size={10} />
+            <span>Measured</span>
+          </span>
+        );
+      case 'derived':
+        return (
+          <span
+            className="badge badge-neutral"
+            title="Mathematically derived from related balance equation"
+            style={{ fontSize: '10px', display: 'inline-flex', alignItems: 'center', gap: '2px' }}
+          >
+            <Layers size={10} />
+            <span>Derived</span>
+          </span>
+        );
+      case 'estimated':
+        return (
+          <span
+            className="badge badge-warning"
+            title="Operator visual estimation"
+            style={{ fontSize: '10px', display: 'inline-flex', alignItems: 'center', gap: '2px' }}
+          >
+            <Eye size={10} />
+            <span>Estimated</span>
+          </span>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="feature-container">
@@ -128,7 +388,30 @@ export default function MessShell({ activeTab }) {
         </div>
       </div>
 
-      {/* Summary KPI Cards */}
+      {/* Spark Quota & Missing Data Notice Banner */}
+      <div
+        style={{
+          marginTop: 'var(--space-3)',
+          padding: 'var(--space-2) var(--space-3)',
+          background: 'var(--color-surface)',
+          borderLeft: '3px solid var(--color-brand-700)',
+          borderRadius: 'var(--radius-sm)',
+          fontSize: 'var(--font-size-caption)',
+          color: 'var(--color-muted)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 'var(--space-2)',
+        }}
+      >
+        <Info size={15} style={{ color: 'var(--color-brand-700)', flexShrink: 0 }} />
+        <span>
+          <strong>Data Quality Rules:</strong> Missing data is recorded as <code>null</code>, never{' '}
+          <code>0</code>. Measured, derived, and estimated quantities are strictly separated. Units
+          are never mixed.
+        </span>
+      </div>
+
+      {/* Summary KPI Cards (Primary Unit: kg) */}
       <div
         style={{
           marginTop: 'var(--space-4)',
@@ -142,13 +425,13 @@ export default function MessShell({ activeTab }) {
           style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
         >
           <span className="text-muted" style={{ fontSize: 'var(--font-size-caption)' }}>
-            Total Prepared
+            Total Prepared ({primaryUnitMetric.unit})
           </span>
           <div style={{ fontSize: '1.4rem', fontWeight: 'bold', color: 'var(--color-brand-900)' }}>
-            {totalPrepared.toFixed(1)} kg
+            {primaryUnitMetric.totalPrepared.toFixed(1)} {primaryUnitMetric.unit}
           </div>
           <span style={{ fontSize: 'var(--font-size-caption)', color: 'var(--color-muted)' }}>
-            Across logged services
+            Across {primaryUnitMetric.totalRecords || 0} logged sessions
           </span>
         </div>
 
@@ -157,13 +440,13 @@ export default function MessShell({ activeTab }) {
           style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
         >
           <span className="text-muted" style={{ fontSize: 'var(--font-size-caption)' }}>
-            Total Consumed
+            Total Consumed ({primaryUnitMetric.unit})
           </span>
           <div style={{ fontSize: '1.4rem', fontWeight: 'bold', color: 'var(--color-success)' }}>
-            {totalServed.toFixed(1)} kg
+            {primaryUnitMetric.totalServed.toFixed(1)} {primaryUnitMetric.unit}
           </div>
           <span style={{ fontSize: 'var(--font-size-caption)', color: 'var(--color-muted)' }}>
-            Dining hall absorption
+            From {primaryUnitMetric.servedSampleCount || 0} measured meals
           </span>
         </div>
 
@@ -172,13 +455,30 @@ export default function MessShell({ activeTab }) {
           style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
         >
           <span className="text-muted" style={{ fontSize: 'var(--font-size-caption)' }}>
-            Unserved Surplus
+            Unserved Surplus ({primaryUnitMetric.unit})
           </span>
           <div style={{ fontSize: '1.4rem', fontWeight: 'bold', color: 'var(--color-warning)' }}>
-            {totalLeftover.toFixed(1)} kg
+            {primaryUnitMetric.totalLeftover.toFixed(1)} {primaryUnitMetric.unit}
           </div>
           <span style={{ fontSize: 'var(--font-size-caption)', color: 'var(--color-muted)' }}>
-            {surplusPct}% surplus rate
+            {primaryUnitMetric.surplusRate}% surplus rate
+          </span>
+        </div>
+
+        <div
+          className="card"
+          style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+        >
+          <span className="text-muted" style={{ fontSize: 'var(--font-size-caption)' }}>
+            Per-Diner Consumption
+          </span>
+          <div style={{ fontSize: '1.4rem', fontWeight: 'bold', color: 'var(--color-brand-800)' }}>
+            {perCapitaKg.averagePerPerson !== null
+              ? `${perCapitaKg.averagePerPerson} kg/diner`
+              : 'N/A'}
+          </div>
+          <span style={{ fontSize: 'var(--font-size-caption)', color: 'var(--color-muted)' }}>
+            Sample size: n = {perCapitaKg.validSampleCount} complete records
           </span>
         </div>
       </div>
@@ -191,7 +491,7 @@ export default function MessShell({ activeTab }) {
             <h2>Log Daily Meal Service Record</h2>
           </div>
           <p className="text-muted" style={{ marginTop: 'var(--space-1)' }}>
-            Enter measured quantities. Incomplete data is stored as null, not zero.
+            Enter measured quantities. Missing data is stored as null, not zero.
           </p>
 
           {formSuccess && (
@@ -285,74 +585,10 @@ export default function MessShell({ activeTab }) {
                   required
                 />
               </div>
-            </div>
-
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                gap: 'var(--space-3)',
-                marginTop: 'var(--space-3)',
-              }}
-            >
-              <div className="input-group">
-                <label htmlFor="meal-prepared" className="input-label">
-                  Prepared Quantity *
-                </label>
-                <input
-                  id="meal-prepared"
-                  type="number"
-                  step="0.5"
-                  min="0"
-                  className="input-field"
-                  placeholder="e.g. 50.0"
-                  value={formData.preparedQty}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, preparedQty: e.target.value }))
-                  }
-                  required
-                />
-              </div>
-
-              <div className="input-group">
-                <label htmlFor="meal-served" className="input-label">
-                  Served / Consumed *
-                </label>
-                <input
-                  id="meal-served"
-                  type="number"
-                  step="0.5"
-                  min="0"
-                  className="input-field"
-                  placeholder="e.g. 45.0"
-                  value={formData.servedQty}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, servedQty: e.target.value }))}
-                  required
-                />
-              </div>
-
-              <div className="input-group">
-                <label htmlFor="meal-leftover" className="input-label">
-                  Unserved Leftover *
-                </label>
-                <input
-                  id="meal-leftover"
-                  type="number"
-                  step="0.5"
-                  min="0"
-                  className="input-field"
-                  placeholder="e.g. 5.0"
-                  value={formData.leftoverQty}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, leftoverQty: e.target.value }))
-                  }
-                  required
-                />
-              </div>
 
               <div className="input-group">
                 <label htmlFor="meal-unit" className="input-label">
-                  Unit
+                  Measurement Unit *
                 </label>
                 <select
                   id="meal-unit"
@@ -360,28 +596,215 @@ export default function MessShell({ activeTab }) {
                   value={formData.unit}
                   onChange={(e) => setFormData((prev) => ({ ...prev, unit: e.target.value }))}
                 >
-                  <option value="kg">kg</option>
-                  <option value="portions">portions</option>
-                  <option value="liters">liters</option>
+                  <option value="kg">kg (weight)</option>
+                  <option value="portions">portions (count)</option>
+                  <option value="litres">litres (volume)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Quantities and Measurement Methods */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                gap: 'var(--space-3)',
+                marginTop: 'var(--space-4)',
+                padding: 'var(--space-3)',
+                background: 'var(--color-canvas)',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--color-border)',
+              }}
+            >
+              {/* Prepared Quantity */}
+              <div className="input-group">
+                <label htmlFor="meal-prepared" className="input-label">
+                  Prepared Quantity ({formData.unit}) *
+                </label>
+                <input
+                  id="meal-prepared"
+                  type="number"
+                  step="0.5"
+                  min="0"
+                  className="input-field"
+                  placeholder="e.g. 100.0"
+                  value={formData.preparedQty}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, preparedQty: e.target.value }))
+                  }
+                  required
+                />
+                <select
+                  aria-label="Prepared Method"
+                  className="input-field"
+                  style={{ marginTop: '4px', fontSize: 'var(--font-size-caption)' }}
+                  value={formData.preparedMethod}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, preparedMethod: e.target.value }))
+                  }
+                >
+                  <option value="measured">Measured (Kitchen Scale)</option>
+                  <option value="estimated">Estimated (Visual/Batch)</option>
                 </select>
               </div>
 
+              {/* Served Quantity */}
+              <div className="input-group">
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                  }}
+                >
+                  <label htmlFor="meal-served" className="input-label">
+                    Served / Consumed ({formData.unit})
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleAutoDeriveServed}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--color-brand-700)',
+                      cursor: 'pointer',
+                      fontSize: '11px',
+                      textDecoration: 'underline',
+                    }}
+                  >
+                    Derive (Prep - Left)
+                  </button>
+                </div>
+                <input
+                  id="meal-served"
+                  type="number"
+                  step="0.5"
+                  min="0"
+                  className="input-field"
+                  placeholder="Leave empty if unmeasured"
+                  value={formData.servedQty}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, servedQty: e.target.value }))}
+                />
+                <select
+                  aria-label="Served Method"
+                  className="input-field"
+                  style={{ marginTop: '4px', fontSize: 'var(--font-size-caption)' }}
+                  value={formData.servedMethod}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, servedMethod: e.target.value }))
+                  }
+                >
+                  <option value="measured">Measured (Direct Weighing)</option>
+                  <option value="derived">Derived (Prepared - Leftover)</option>
+                  <option value="estimated">Estimated (Visual Estimate)</option>
+                </select>
+                <span style={{ fontSize: '11px', color: 'var(--color-muted)', marginTop: '2px' }}>
+                  Blank = null (not 0)
+                </span>
+              </div>
+
+              {/* Leftover Quantity */}
+              <div className="input-group">
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                  }}
+                >
+                  <label htmlFor="meal-leftover" className="input-label">
+                    Unserved Leftover ({formData.unit}) *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleAutoDeriveLeftover}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--color-brand-700)',
+                      cursor: 'pointer',
+                      fontSize: '11px',
+                      textDecoration: 'underline',
+                    }}
+                  >
+                    Derive (Prep - Served)
+                  </button>
+                </div>
+                <input
+                  id="meal-leftover"
+                  type="number"
+                  step="0.5"
+                  min="0"
+                  className="input-field"
+                  placeholder="e.g. 12.5"
+                  value={formData.leftoverQty}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, leftoverQty: e.target.value }))
+                  }
+                  required
+                />
+                <select
+                  aria-label="Leftover Method"
+                  className="input-field"
+                  style={{ marginTop: '4px', fontSize: 'var(--font-size-caption)' }}
+                  value={formData.leftoverMethod}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, leftoverMethod: e.target.value }))
+                  }
+                >
+                  <option value="measured">Measured (Kitchen Scale)</option>
+                  <option value="derived">Derived (Prepared - Served)</option>
+                  <option value="estimated">Estimated (Visual/Pan)</option>
+                </select>
+              </div>
+
+              {/* People Served */}
               <div className="input-group">
                 <label htmlFor="meal-people" className="input-label">
-                  People Served
+                  People Served (Headcount)
                 </label>
                 <input
                   id="meal-people"
                   type="number"
                   min="0"
                   className="input-field"
-                  placeholder="e.g. 240"
+                  placeholder="Leave empty if uncounted"
                   value={formData.peopleServed}
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, peopleServed: e.target.value }))
                   }
                 />
+                <select
+                  aria-label="Headcount Method"
+                  className="input-field"
+                  style={{ marginTop: '4px', fontSize: 'var(--font-size-caption)' }}
+                  value={formData.peopleMethod}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, peopleMethod: e.target.value }))
+                  }
+                >
+                  <option value="measured">Measured (Token / Turnstile Count)</option>
+                  <option value="estimated">Estimated (Visual Headcount)</option>
+                </select>
+                <span style={{ fontSize: '11px', color: 'var(--color-muted)', marginTop: '2px' }}>
+                  Blank = null (not 0)
+                </span>
               </div>
+            </div>
+
+            {/* Operational Notes */}
+            <div className="input-group" style={{ marginTop: 'var(--space-3)' }}>
+              <label htmlFor="meal-notes" className="input-label">
+                Operational Notes (Optional)
+              </label>
+              <input
+                id="meal-notes"
+                type="text"
+                className="input-field"
+                placeholder="e.g. Exam week, rain impacted attendance, recipe modification"
+                value={formData.notes}
+                onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
+              />
             </div>
 
             <div
@@ -392,8 +815,8 @@ export default function MessShell({ activeTab }) {
                 gap: 'var(--space-3)',
               }}
             >
-              <button type="submit" className="btn btn-primary">
-                <span>Save Production Record</span>
+              <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                <span>{isSubmitting ? 'Saving Record...' : 'Save Production Record'}</span>
               </button>
             </div>
           </form>
@@ -415,26 +838,31 @@ export default function MessShell({ activeTab }) {
             <div>
               <h2>Leftover Production Log</h2>
               <p className="text-muted" style={{ marginTop: 'var(--space-1)' }}>
-                Auditable records of all kitchen meal sessions.
+                Auditable records with explicit units and measurement methods. Paginated within
+                quota.
               </p>
             </div>
             <div>
               <select
                 aria-label="Filter by Meal Type"
                 value={filterMealType}
-                onChange={(e) => setFilterMealType(e.target.value)}
+                onChange={(e) => {
+                  setFilterMealType(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className="input-field"
                 style={{ width: 'auto', minHeight: '32px' }}
               >
                 <option value="all">All Meal Types</option>
                 <option value="breakfast">Breakfast</option>
                 <option value="lunch">Lunch</option>
+                <option value="snacks">Snacks</option>
                 <option value="dinner">Dinner</option>
               </select>
             </div>
           </div>
 
-          <div className="responsive-table-wrapper">
+          <div className="responsive-table-wrapper" style={{ marginTop: 'var(--space-3)' }}>
             <table className="data-table">
               <thead>
                 <tr>
@@ -444,36 +872,135 @@ export default function MessShell({ activeTab }) {
                   <th>Prepared</th>
                   <th>Served</th>
                   <th>Leftover</th>
-                  <th>People</th>
+                  <th>Headcount</th>
+                  <th>Quality / Method</th>
                   <th>Entered By</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredRecords.map((rec) => (
-                  <tr key={rec.id}>
-                    <td>{rec.mealDate}</td>
-                    <td>
-                      <span className="badge badge-neutral">{rec.mealType}</span>
+                {paginatedRecords.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="9"
+                      style={{
+                        textAlign: 'center',
+                        padding: 'var(--space-6)',
+                        color: 'var(--color-muted)',
+                      }}
+                    >
+                      No meal service records match the selected filter.
                     </td>
-                    <td>
-                      <strong>{rec.dishName}</strong>
-                    </td>
-                    <td>
-                      {rec.preparedQty} {rec.unit}
-                    </td>
-                    <td>
-                      {rec.servedQty} {rec.unit}
-                    </td>
-                    <td style={{ fontWeight: 600, color: 'var(--color-warning)' }}>
-                      {rec.leftoverQty} {rec.unit}
-                    </td>
-                    <td>{rec.peopleServed || 'N/A'}</td>
-                    <td style={{ color: 'var(--color-muted)' }}>{rec.enteredBy}</td>
                   </tr>
-                ))}
+                ) : (
+                  paginatedRecords.map((rec) => (
+                    <tr key={rec.id}>
+                      <td style={{ whiteSpace: 'nowrap' }}>{rec.mealDate}</td>
+                      <td>
+                        <span
+                          className="badge badge-neutral"
+                          style={{ textTransform: 'capitalize' }}
+                        >
+                          {rec.mealType}
+                        </span>
+                      </td>
+                      <td>
+                        <strong>{rec.dishName}</strong>
+                        {rec.notes && (
+                          <div
+                            style={{
+                              fontSize: '11px',
+                              color: 'var(--color-muted)',
+                              marginTop: '2px',
+                            }}
+                          >
+                            {rec.notes}
+                          </div>
+                        )}
+                      </td>
+                      <td>
+                        {rec.preparedQty} {rec.unit}
+                      </td>
+                      <td>
+                        {rec.servedQty !== null && rec.servedQty !== undefined ? (
+                          `${rec.servedQty} ${rec.unit}`
+                        ) : (
+                          <span
+                            className="badge badge-neutral"
+                            style={{ fontSize: '10px' }}
+                            title="Missing data is stored as null, not zero"
+                          >
+                            N/A (Missing)
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ fontWeight: 600, color: 'var(--color-warning)' }}>
+                        {rec.leftoverQty} {rec.unit}
+                      </td>
+                      <td>
+                        {rec.peopleServed !== null && rec.peopleServed !== undefined ? (
+                          rec.peopleServed
+                        ) : (
+                          <span className="badge badge-neutral" style={{ fontSize: '10px' }}>
+                            N/A
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '3px', flexWrap: 'wrap' }}>
+                          {getMethodBadge(rec.leftoverMethod || rec.preparedMethod)}
+                        </div>
+                      </td>
+                      <td style={{ color: 'var(--color-muted)', fontSize: '11px' }}>
+                        {rec.enteredBy}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div
+              style={{
+                marginTop: 'var(--space-3)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: 'var(--space-2) var(--space-3)',
+                background: 'var(--color-canvas)',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: 'var(--font-size-caption)',
+              }}
+            >
+              <span>
+                Page {currentPage} of {totalPages} ({filteredRecords.length} records total)
+              </span>
+              <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  disabled={currentPage <= 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  aria-label="Previous Page"
+                >
+                  <ChevronLeft size={14} />
+                  <span>Prev</span>
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  aria-label="Next Page"
+                >
+                  <span>Next</span>
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -482,10 +1009,11 @@ export default function MessShell({ activeTab }) {
         <div className="card" style={{ marginTop: 'var(--space-4)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
             <TrendingUp size={22} color="var(--color-brand-700)" />
-            <h2>Consumption Trends &amp; Surplus Patterns</h2>
+            <h2>Descriptive Analytics &amp; Surplus Patterns</h2>
           </div>
           <p className="text-muted" style={{ marginTop: 'var(--space-1)' }}>
-            Accessible data-driven summaries. Avoids fabricated placeholder charts.
+            Descriptive statistics computed strictly within quota. Missing values are omitted from
+            denominators, never assumed to be zero.
           </p>
 
           <div
@@ -496,6 +1024,7 @@ export default function MessShell({ activeTab }) {
               gap: 'var(--space-4)',
             }}
           >
+            {/* Dish-level Surplus Patterns */}
             <div
               className="card"
               style={{
@@ -508,90 +1037,54 @@ export default function MessShell({ activeTab }) {
                 className="text-muted"
                 style={{ fontSize: 'var(--font-size-caption)', marginTop: '2px' }}
               >
-                Surplus percentage by food item
+                Surplus percentage by menu item (with transparent sample sizes)
               </p>
 
               <div style={{ marginTop: 'var(--space-3)' }}>
-                <div style={{ marginBottom: 'var(--space-2)' }}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      fontSize: 'var(--font-size-label)',
-                    }}
-                  >
-                    <span>Yellow Dal &amp; Jeera Rice</span>
-                    <strong>12.9% surplus</strong>
-                  </div>
-                  <div
-                    style={{
-                      height: '8px',
-                      background: 'var(--color-border)',
-                      borderRadius: 'var(--radius-full)',
-                      overflow: 'hidden',
-                      marginTop: '4px',
-                    }}
-                  >
+                {analytics.dishPatterns.map((dish) => (
+                  <div key={dish.dishName} style={{ marginBottom: 'var(--space-3)' }}>
                     <div
-                      style={{ width: '12.9%', height: '100%', background: 'var(--color-warning)' }}
-                    />
-                  </div>
-                </div>
-
-                <div style={{ marginBottom: 'var(--space-2)' }}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      fontSize: 'var(--font-size-label)',
-                    }}
-                  >
-                    <span>Mix Veg Curry &amp; Rotis</span>
-                    <strong>13.7% surplus</strong>
-                  </div>
-                  <div
-                    style={{
-                      height: '8px',
-                      background: 'var(--color-border)',
-                      borderRadius: 'var(--radius-full)',
-                      overflow: 'hidden',
-                      marginTop: '4px',
-                    }}
-                  >
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        fontSize: 'var(--font-size-label)',
+                      }}
+                    >
+                      <span>
+                        <strong>{dish.dishName}</strong>{' '}
+                        <span style={{ fontSize: '11px', color: 'var(--color-muted)' }}>
+                          (n = {dish.sampleCount})
+                        </span>
+                      </span>
+                      <strong>
+                        {dish.surplusRate}% surplus ({dish.totalLeftover} / {dish.totalPrepared}{' '}
+                        {dish.unit})
+                      </strong>
+                    </div>
                     <div
-                      style={{ width: '13.7%', height: '100%', background: 'var(--color-warning)' }}
-                    />
+                      style={{
+                        height: '8px',
+                        background: 'var(--color-border)',
+                        borderRadius: 'var(--radius-full)',
+                        overflow: 'hidden',
+                        marginTop: '4px',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${Math.min(dish.surplusRate, 100)}%`,
+                          height: '100%',
+                          background:
+                            dish.surplusRate > 10 ? 'var(--color-warning)' : 'var(--color-success)',
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
-
-                <div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      fontSize: 'var(--font-size-label)',
-                    }}
-                  >
-                    <span>Poha &amp; Chai</span>
-                    <strong>1.5% surplus</strong>
-                  </div>
-                  <div
-                    style={{
-                      height: '8px',
-                      background: 'var(--color-border)',
-                      borderRadius: 'var(--radius-full)',
-                      overflow: 'hidden',
-                      marginTop: '4px',
-                    }}
-                  >
-                    <div
-                      style={{ width: '1.5%', height: '100%', background: 'var(--color-success)' }}
-                    />
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
+            {/* Data Completeness & Measurement Quality Audit */}
             <div
               className="card"
               style={{
@@ -599,24 +1092,45 @@ export default function MessShell({ activeTab }) {
                 border: '1px solid var(--color-border)',
               }}
             >
-              <h3>Data Completeness Audit</h3>
+              <h3>Data Quality &amp; Integrity Audit</h3>
               <p
                 className="text-muted"
                 style={{ fontSize: 'var(--font-size-caption)', marginTop: '2px' }}
               >
-                Required for reliable advisory forecasts
+                Audit of measured vs derived vs estimated quantities
               </p>
 
               <div style={{ marginTop: 'var(--space-3)', fontSize: 'var(--font-size-label)' }}>
                 <p>
-                  &bull; <strong>Current logged window:</strong> 3 consecutive service days
+                  &bull; <strong>Total Service Records:</strong>{' '}
+                  {analytics.qualityMetrics.totalRecords} logged meals
                 </p>
                 <p style={{ marginTop: 'var(--space-2)' }}>
-                  &bull; <strong>Pre-requisite for automated advisory:</strong> 14 complete days
+                  &bull; <strong>Directly Measured on Scale:</strong>{' '}
+                  {analytics.qualityMetrics.measuredCount} records
                 </p>
                 <p style={{ marginTop: 'var(--space-2)' }}>
-                  &bull; <strong>Data integrity:</strong> All quantities logged with verified unit
-                  weight (kg).
+                  &bull; <strong>Mathematically Derived:</strong>{' '}
+                  {analytics.qualityMetrics.derivedCount} records
+                </p>
+                <p style={{ marginTop: 'var(--space-2)' }}>
+                  &bull; <strong>Visual / Operator Estimated:</strong>{' '}
+                  {analytics.qualityMetrics.estimatedCount} records
+                </p>
+                <p style={{ marginTop: 'var(--space-2)' }}>
+                  &bull; <strong>Missing Consumed / Headcount:</strong>{' '}
+                  {analytics.qualityMetrics.missingServedCount} served /{' '}
+                  {analytics.qualityMetrics.missingPeopleCount} diners
+                </p>
+                <p
+                  style={{
+                    marginTop: 'var(--space-2)',
+                    color: 'var(--color-muted)',
+                    fontSize: 'var(--font-size-caption)',
+                  }}
+                >
+                  * All calculations exclude missing values from denominators to avoid artificial
+                  dilution.
                 </p>
               </div>
             </div>
