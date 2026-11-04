@@ -12,6 +12,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Layers,
+  Sparkles,
+  ShieldAlert,
+  RefreshCw,
 } from 'lucide-react';
 import { useAuth } from '../auth/useAuth.js';
 import {
@@ -20,6 +23,11 @@ import {
   fetchMessRecordsPaginated,
   computeMessAnalytics,
 } from './messService.js';
+import {
+  generateAdvisoryForecasts,
+  generate14DayHistoricalSeed,
+  MIN_HISTORICAL_DAYS,
+} from './advisoryService.js';
 
 // Baseline seed data when offline or prior to live organisation logging
 const INITIAL_DEMO_RECORDS = [
@@ -320,6 +328,20 @@ export default function MessShell({ activeTab }) {
   const analytics = useMemo(() => {
     return computeMessAnalytics(records);
   }, [records]);
+
+  // Compute Advisory Predictions & Moving Averages (Prompt 15)
+  const forecastData = useMemo(() => {
+    return generateAdvisoryForecasts(records);
+  }, [records]);
+
+  const handleLoad14DayPilot = () => {
+    const seed = generate14DayHistoricalSeed(orgId);
+    setRecords(seed);
+  };
+
+  const handleResetToBaseline = () => {
+    setRecords(INITIAL_DEMO_RECORDS);
+  };
 
   // Primary unit metrics (e.g. kg)
   const primaryUnitMetric = analytics.unitMetrics['kg'] ||
@@ -1141,52 +1163,388 @@ export default function MessShell({ activeTab }) {
       {/* View 4: Advisory Forecast */}
       {activeTab === 'advisory-forecast' && (
         <div className="card" style={{ marginTop: 'var(--space-4)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <Lightbulb size={22} color="var(--color-accent-600)" />
-            <h2>Production Advisory &amp; Forecasting</h2>
-          </div>
-          <p className="text-muted" style={{ marginTop: 'var(--space-1)' }}>
-            Guidance for kitchen managers to reduce daily surplus before cooking.
-          </p>
-
           <div
-            className="notice-box"
             style={{
-              marginTop: 'var(--space-4)',
-              padding: 'var(--space-4)',
-              background: 'var(--color-warning-bg)',
-              border: '1px solid var(--color-warning)',
-              borderRadius: 'var(--radius-md)',
-              color: 'var(--color-warning)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 'var(--space-2)',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-              <Clock size={20} />
-              <strong>Advisory Gated: Awaiting 14-Day Minimum Historical Data</strong>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                <Lightbulb size={22} color="var(--color-brand-700)" />
+                <h2>Production Advisory &amp; Forecasting</h2>
+              </div>
+              <p className="text-muted" style={{ marginTop: 'var(--space-1)' }}>
+                Empirical moving averages &amp; weekday patterns. All predictions are marked
+                ESTIMATE.
+              </p>
             </div>
-            <p style={{ marginTop: 'var(--space-2)', fontSize: 'var(--font-size-label)' }}>
-              FoodBridge does not fabricate predictive forecasts. Automated production advice
-              requires at least 14 days of complete meal records to account for weekend attendance
-              variations and seasonal weather.
-            </p>
+
+            <div>
+              {forecastData.isGated ? (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleLoad14DayPilot}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <Sparkles size={14} />
+                  <span>Load 14-Day Pilot History</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleResetToBaseline}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <RefreshCw size={14} />
+                  <span>Reset to Baseline Demo</span>
+                </button>
+              )}
+            </div>
           </div>
 
-          <div
-            style={{
-              marginTop: 'var(--space-4)',
-              padding: 'var(--space-3)',
-              background: 'var(--color-canvas)',
-              borderRadius: 'var(--radius-md)',
-              fontSize: 'var(--font-size-label)',
-            }}
-          >
-            <strong>Interim Recommendation:</strong>
-            <p style={{ marginTop: 'var(--space-1)', color: 'var(--color-muted)' }}>
-              Historical lunch services on Tuesdays show an average of 14–16 kg surplus in rice
-              preparations. Consider scaling down batch prep by 10% for the initial 12:00 PM opening
-              and preparing replenishment batches as dining hall attendance dictates.
-            </p>
-          </div>
+          {/* Gated State: < 14 Days */}
+          {forecastData.isGated ? (
+            <div style={{ marginTop: 'var(--space-4)' }}>
+              <div
+                className="notice-box"
+                style={{
+                  padding: 'var(--space-4)',
+                  background: 'var(--color-warning-bg)',
+                  border: '1px solid var(--color-warning)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--color-warning)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                  <Clock size={20} />
+                  <strong>Advisory Gated: Awaiting 14-Day Minimum Historical Data</strong>
+                </div>
+                <p style={{ marginTop: 'var(--space-2)', fontSize: 'var(--font-size-label)' }}>
+                  FoodBridge does not fabricate predictive forecasts. Automated production advice
+                  requires at least 14 days of complete meal records to account for weekend
+                  attendance variations and seasonal weather.
+                </p>
+
+                <div style={{ marginTop: 'var(--space-3)' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      fontSize: 'var(--font-size-caption)',
+                    }}
+                  >
+                    <span>
+                      Logging Progress: {forecastData.eligibility.distinctDaysCount} of{' '}
+                      {MIN_HISTORICAL_DAYS} days recorded
+                    </span>
+                    <span>
+                      {Math.round(
+                        (forecastData.eligibility.distinctDaysCount / MIN_HISTORICAL_DAYS) * 100
+                      )}
+                      %
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      height: '8px',
+                      background: 'rgba(0,0,0,0.1)',
+                      borderRadius: 'var(--radius-full)',
+                      overflow: 'hidden',
+                      marginTop: '4px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${Math.min(
+                          (forecastData.eligibility.distinctDaysCount / MIN_HISTORICAL_DAYS) * 100,
+                          100
+                        )}%`,
+                        height: '100%',
+                        background: 'var(--color-warning)',
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  marginTop: 'var(--space-4)',
+                  padding: 'var(--space-3)',
+                  background: 'var(--color-canvas)',
+                  borderRadius: 'var(--radius-md)',
+                  fontSize: 'var(--font-size-label)',
+                }}
+              >
+                <strong>Interim Recommendation:</strong>
+                <p style={{ marginTop: 'var(--space-1)', color: 'var(--color-muted)' }}>
+                  Historical lunch services on Tuesdays show an average of 14–16 kg surplus in rice
+                  preparations. Consider scaling down batch prep by 10% for the initial 12:00 PM
+                  opening and preparing replenishment batches as dining hall attendance dictates.
+                </p>
+              </div>
+            </div>
+          ) : (
+            /* Un-Gated Active Forecast: >= 14 Days */
+            <div style={{ marginTop: 'var(--space-4)' }}>
+              {/* Zero-Cost & Safety Banner */}
+              <div
+                style={{
+                  padding: 'var(--space-3) var(--space-4)',
+                  background: 'var(--color-surface)',
+                  border: '1px solid var(--color-border)',
+                  borderLeft: '4px solid var(--color-brand-700)',
+                  borderRadius: 'var(--radius-md)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: 'var(--space-2)',
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                    <span className="badge badge-success" style={{ fontSize: '11px' }}>
+                      Active 14-Day Rolling Model
+                    </span>
+                    <span
+                      style={{ fontSize: 'var(--font-size-caption)', color: 'var(--color-muted)' }}
+                    >
+                      Pure JavaScript Moving Average (Zero ML Cost)
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 'var(--font-size-label)', marginTop: '4px' }}>
+                    <strong>Sample Size:</strong> n = {forecastData.eligibility.totalRecords} meals
+                    across {forecastData.eligibility.distinctDaysCount} service days &bull;{' '}
+                    <strong>Window:</strong> {forecastData.eligibility.dateStart} to{' '}
+                    {forecastData.eligibility.dateEnd}
+                  </div>
+                </div>
+
+                <div style={{ fontSize: '11px', color: 'var(--color-muted)', textAlign: 'right' }}>
+                  <span>Uncertainty indicates sample standard deviation (&plusmn; &sigma;)</span>
+                </div>
+              </div>
+
+              {/* Invariant Warning: Forecasts Never Create Confirmed Listings */}
+              <div
+                style={{
+                  marginTop: 'var(--space-3)',
+                  padding: 'var(--space-2) var(--space-3)',
+                  background: 'var(--color-canvas)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: 'var(--font-size-caption)',
+                  color: 'var(--color-muted)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 'var(--space-2)',
+                }}
+              >
+                <ShieldAlert size={16} style={{ color: 'var(--color-warning)', flexShrink: 0 }} />
+                <span>
+                  <strong>Safety Contract:</strong> Forecasts are advisory estimates for kitchen
+                  production planning.{' '}
+                  <strong>Forecasts never create confirmed surplus listings</strong> or commit food
+                  donations without explicit, physical human inspection and manual publishing.
+                </span>
+              </div>
+
+              {/* Weekday Patterns Grid */}
+              <div style={{ marginTop: 'var(--space-4)' }}>
+                <h3>Day-of-Week Moving Averages &amp; Surplus Patterns</h3>
+                <p
+                  className="text-muted"
+                  style={{ fontSize: 'var(--font-size-caption)', marginTop: '2px' }}
+                >
+                  Historical consumption patterns aggregated by day of the week
+                </p>
+
+                <div
+                  style={{
+                    marginTop: 'var(--space-3)',
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                    gap: 'var(--space-3)',
+                  }}
+                >
+                  {Object.values(forecastData.weekdayPatterns).map((wp) => (
+                    <div
+                      key={wp.dayName}
+                      className="card"
+                      style={{
+                        background: 'var(--color-surface)',
+                        border: '1px solid var(--color-border)',
+                        padding: 'var(--space-3)',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <strong style={{ fontSize: '1rem' }}>{wp.dayName}s</strong>
+                        <span className="badge badge-neutral" style={{ fontSize: '10px' }}>
+                          n = {wp.sampleSize}
+                        </span>
+                      </div>
+
+                      <div
+                        style={{
+                          marginTop: 'var(--space-2)',
+                          fontSize: 'var(--font-size-caption)',
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            marginBottom: '2px',
+                          }}
+                        >
+                          <span className="text-muted">Average Prep:</span>
+                          <strong>
+                            {wp.avgPrepared} {wp.primaryUnit}
+                          </strong>
+                        </div>
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            marginBottom: '2px',
+                          }}
+                        >
+                          <span className="text-muted">Predicted Surplus:</span>
+                          <span style={{ color: 'var(--color-warning)', fontWeight: 600 }}>
+                            {wp.avgLeftover} &plusmn; {wp.leftoverUncertainty} {wp.primaryUnit}{' '}
+                            <small
+                              className="badge badge-neutral"
+                              style={{ fontSize: '9px', padding: '1px 3px' }}
+                            >
+                              ESTIMATE
+                            </small>
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span className="text-muted">Historical Surplus Rate:</span>
+                          <strong>{wp.surplusRate}%</strong>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Dish-Specific Batch Prep Scaling Recommendations */}
+              <div style={{ marginTop: 'var(--space-5)' }}>
+                <h3>Dish-Specific Batch Scaling Guidance</h3>
+                <p
+                  className="text-muted"
+                  style={{ fontSize: 'var(--font-size-caption)', marginTop: '2px' }}
+                >
+                  Actionable kitchen scaling recommendations to prevent daily surplus before cooking
+                </p>
+
+                <div
+                  style={{
+                    marginTop: 'var(--space-3)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 'var(--space-3)',
+                  }}
+                >
+                  {forecastData.dishRecommendations.map((rec) => (
+                    <div
+                      key={rec.dishName}
+                      className="card"
+                      style={{
+                        background: 'var(--color-canvas)',
+                        border: '1px solid var(--color-border)',
+                        padding: 'var(--space-3)',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'baseline',
+                          flexWrap: 'wrap',
+                          gap: 'var(--space-2)',
+                        }}
+                      >
+                        <div>
+                          <strong style={{ fontSize: '1.05rem' }}>{rec.dishName}</strong>{' '}
+                          <span style={{ fontSize: '11px', color: 'var(--color-muted)' }}>
+                            (n = {rec.sampleSize} services)
+                          </span>
+                        </div>
+                        <div>
+                          {rec.recommendedAdjustmentPct < 0 ? (
+                            <span
+                              className="badge badge-warning"
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+                            >
+                              <span>Reduce Prep by {Math.abs(rec.recommendedAdjustmentPct)}%</span>
+                              <span style={{ fontSize: '9px', opacity: 0.85 }}>[ESTIMATE]</span>
+                            </span>
+                          ) : (
+                            <span className="badge badge-success">Prep Optimal</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          marginTop: 'var(--space-2)',
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                          gap: 'var(--space-2)',
+                          fontSize: 'var(--font-size-caption)',
+                        }}
+                      >
+                        <div>
+                          <span className="text-muted">Historical Prep:</span> {rec.avgPrep}{' '}
+                          {rec.unit}
+                        </div>
+                        <div>
+                          <span className="text-muted">Average Leftover:</span> {rec.avgLeftover}{' '}
+                          &plusmn; {rec.leftoverUncertainty} {rec.unit} ({rec.surplusRate}%)
+                        </div>
+                        <div>
+                          <span className="text-muted">Suggested Initial Prep:</span>{' '}
+                          <strong>
+                            {rec.suggestedPrep} {rec.unit}
+                          </strong>{' '}
+                          <small className="badge badge-neutral" style={{ fontSize: '9px' }}>
+                            ESTIMATE
+                          </small>
+                        </div>
+                      </div>
+
+                      <p
+                        style={{
+                          margin: 'var(--space-2) 0 0 0',
+                          fontSize: 'var(--font-size-caption)',
+                          color: 'var(--color-muted)',
+                          lineHeight: 1.45,
+                        }}
+                      >
+                        &bull; {rec.guidanceText}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
