@@ -1,103 +1,115 @@
-import { UserCheck, Activity } from 'lucide-react';
+import { ShieldAlert, Lock } from 'lucide-react';
+import { useAuth } from '../auth/useAuth.js';
+import VerificationQueue from './VerificationQueue.jsx';
+import './admin.css';
 
 export default function AdminShell({ activeTab }) {
+  const { user, isAdmin } = useAuth();
+
   return (
     <div className="feature-container">
       <div className="feature-header">
         <div>
           <h1>Administrative & Moderation Console</h1>
           <p className="text-muted">
-            Console-Provisioned Privileged Controls (₹0 Spark Operations)
+            Privileged Controls & Verification Operations (Firebase Spark ₹0 Compliance)
           </p>
         </div>
       </div>
 
-      <div className="card" style={{ marginTop: 'var(--space-6)' }}>
-        <h2>Pending Organisation Applications (Offline Review)</h2>
-        <p className="text-muted" style={{ marginTop: 'var(--space-1)' }}>
-          Active View: <strong>{activeTab}</strong>. Review physical/offline documentation using
-          checklist. No document scans are uploaded to Firestore.
-        </p>
-
-        <div style={{ marginTop: 'var(--space-4)', overflowX: 'auto' }}>
-          <table>
-            <thead>
-              <tr style={{ borderBottom: '2px solid var(--color-border)', textAlign: 'left' }}>
-                <th style={{ padding: 'var(--space-2)' }}>Organisation Name</th>
-                <th style={{ padding: 'var(--space-2)' }}>Type</th>
-                <th style={{ padding: 'var(--space-2)' }}>Submitted Date</th>
-                <th style={{ padding: 'var(--space-2)' }}>Status</th>
-                <th style={{ padding: 'var(--space-2)' }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
-                <td style={{ padding: 'var(--space-2)' }}>City Care Welfare NGO</td>
-                <td style={{ padding: 'var(--space-2)' }}>Verified NGO</td>
-                <td style={{ padding: 'var(--space-2)' }}>Nov 04, 2026</td>
-                <td style={{ padding: 'var(--space-2)' }}>
-                  <span className="badge badge-warning">Pending Review</span>
-                </td>
-                <td style={{ padding: 'var(--space-2)' }}>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    style={{
-                      minHeight: '32px',
-                      padding: '2px var(--space-2)',
-                      fontSize: 'var(--font-size-caption)',
-                    }}
-                  >
-                    <UserCheck size={14} />
-                    <span>Checklist</span>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
+      {!isAdmin ? (
         <div
           className="card"
-          style={{
-            marginTop: 'var(--space-6)',
-            background: 'var(--color-canvas)',
-            border: '1px solid var(--color-border)',
-          }}
+          style={{ maxWidth: '640px', margin: 'var(--space-6) auto', textAlign: 'center' }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <Activity size={18} color="var(--color-brand-700)" />
-            <h3>Daily Spark Quota Headroom</h3>
-          </div>
           <div
             style={{
-              marginTop: 'var(--space-3)',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-              gap: 'var(--space-3)',
+              display: 'inline-flex',
+              padding: 'var(--space-3)',
+              background: 'var(--color-warning-bg)',
+              color: 'var(--color-warning)',
+              borderRadius: 'var(--radius-full)',
+              marginBottom: 'var(--space-2)',
             }}
           >
-            <div>
-              <span className="text-muted" style={{ fontSize: 'var(--font-size-caption)' }}>
-                Firestore Reads (50k limit)
-              </span>
-              <div style={{ fontWeight: 'bold', fontSize: '1.125rem' }}>1,240 / 50,000</div>
+            <Lock size={36} />
+          </div>
+          <h2>Console Admin Provisioning Required</h2>
+          <p className="text-muted" style={{ marginTop: 'var(--space-2)' }}>
+            Under FoodBridge&apos;s deny-by-default security model, administrator privileges are
+            strictly provisioned manually in the Firebase Console under the <code>admins</code>{' '}
+            collection (<code>admins/&#123;uid&#125;</code>).
+          </p>
+
+          <div
+            className="notice-box"
+            style={{
+              marginTop: 'var(--space-4)',
+              textAlign: 'left',
+              background: 'var(--color-canvas)',
+              border: '1px solid var(--color-border)',
+              padding: 'var(--space-3)',
+              borderRadius: 'var(--radius-md)',
+              fontSize: 'var(--font-size-label)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--space-2)',
+                fontWeight: 600,
+              }}
+            >
+              <ShieldAlert size={18} color="var(--color-brand-600)" />
+              <span>How Admin Accounts are Provisioned:</span>
             </div>
-            <div>
-              <span className="text-muted" style={{ fontSize: 'var(--font-size-caption)' }}>
-                Firestore Writes (20k limit)
-              </span>
-              <div style={{ fontWeight: 'bold', fontSize: '1.125rem' }}>410 / 20,000</div>
-            </div>
-            <div>
-              <span className="text-muted" style={{ fontSize: 'var(--font-size-caption)' }}>
-                Hosting Bandwidth (10 GB)
-              </span>
-              <div style={{ fontWeight: 'bold', fontSize: '1.125rem' }}>142 MB / 10 GB</div>
-            </div>
+            <ol
+              style={{
+                marginTop: 'var(--space-2)',
+                paddingLeft: 'var(--space-4)',
+                lineHeight: '1.6',
+              }}
+            >
+              <li>Open the Firebase Console &rarr; Cloud Firestore.</li>
+              <li>
+                Navigate to or create the top-level collection <code>admins</code>.
+              </li>
+              <li>
+                Create a document with ID equal to your user UID (
+                <code>{user?.uid || 'Sign in to see your UID'}</code>).
+              </li>
+              <li>
+                Add field <code>isAdmin: true</code>.
+              </li>
+              <li>Reload the FoodBridge application to access this console.</li>
+            </ol>
+            <p
+              style={{
+                marginTop: 'var(--space-2)',
+                color: 'var(--color-muted)',
+                fontSize: 'var(--font-size-caption)',
+              }}
+            >
+              Note: Client write operations to <code>admins</code> are permanently denied by
+              Firestore security rules (<code>allow write: if false;</code>).
+            </p>
           </div>
         </div>
-      </div>
+      ) : (
+        <div style={{ marginTop: 'var(--space-4)' }}>
+          {activeTab === 'verification-queue' && <VerificationQueue />}
+          {activeTab !== 'verification-queue' && (
+            <div className="card">
+              <h2>{activeTab.replace('-', ' ').toUpperCase()}</h2>
+              <p className="text-muted" style={{ marginTop: 'var(--space-1)' }}>
+                This section is active. To review pending organisations, switch to the Verification
+                Queue tab.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

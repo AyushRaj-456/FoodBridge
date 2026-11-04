@@ -11,6 +11,7 @@ import InfoView from '../features/common/InfoView.jsx';
 import AuthModal from '../features/auth/AuthModal.jsx';
 import UserProfileModal from '../features/auth/UserProfileModal.jsx';
 import AccountStateBanner from '../features/auth/AccountStateBanner.jsx';
+import OrgOnboardingModal from '../features/organisations/OrgOnboardingModal.jsx';
 import './AppShell.css';
 
 const DEFAULT_TABS_FOR_ROLE = {
@@ -26,6 +27,7 @@ export default function AppShell() {
   const [unreadNotifications] = useState(2);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [onboardModalOpen, setOnboardModalOpen] = useState(false);
 
   const handleRoleChange = (newRole) => {
     setCurrentRole(newRole);
@@ -79,7 +81,13 @@ export default function AppShell() {
 
       <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
 
-      <UserProfileModal isOpen={profileModalOpen} onClose={() => setProfileModalOpen(false)} />
+      <UserProfileModal
+        isOpen={profileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
+        onOpenOnboard={() => setOnboardModalOpen(true)}
+      />
+
+      <OrgOnboardingModal isOpen={onboardModalOpen} onClose={() => setOnboardModalOpen(false)} />
     </div>
   );
 }

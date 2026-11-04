@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { X, User, Mail, Shield, LogOut, Check } from 'lucide-react';
+import { X, User, Mail, Shield, LogOut, Check, Building } from 'lucide-react';
 import { useAuth } from './useAuth.js';
 
-export default function UserProfileModal({ isOpen, onClose }) {
+export default function UserProfileModal({ isOpen, onClose, onOpenOnboard }) {
   const { user, profile, isAdmin, logout, updateProfileData } = useAuth();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(profile?.displayName || user?.displayName || '');
@@ -115,7 +115,21 @@ export default function UserProfileModal({ isOpen, onClose }) {
           </div>
         </div>
 
-        <div className="modal-footer">
+        <div className="modal-footer" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+          {onOpenOnboard && (
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => {
+                onClose();
+                onOpenOnboard();
+              }}
+              style={{ marginRight: 'auto' }}
+            >
+              <Building size={16} />
+              <span>Register Organisation</span>
+            </button>
+          )}
           <button type="button" className="btn btn-danger" onClick={handleSignOut}>
             <LogOut size={16} />
             <span>Sign Out</span>
