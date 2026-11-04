@@ -17,6 +17,7 @@ import {
   HelpCircle,
   FileLock2,
   Building,
+  ShieldCheck,
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -106,6 +107,16 @@ export default function Sidebar({ currentRole, activeTab, onSelectTab }) {
             >
               <HelpCircle size={16} aria-hidden="true" />
               <span>Offline SOP Guide</span>
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              className={`sidebar-footer-link ${activeTab === 'terms' ? 'active' : ''}`}
+              onClick={() => onSelectTab('terms')}
+            >
+              <ShieldCheck size={16} aria-hidden="true" />
+              <span>Terms & Protection</span>
             </button>
           </li>
         </ul>

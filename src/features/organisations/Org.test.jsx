@@ -155,7 +155,9 @@ describe('Organisation Onboarding & Verification — ₹0 Spark Baseline', () =>
         screen.getByText(/Recipient Verification Required \(Status: PENDING\)/i)
       ).toBeDefined();
 
-      const claimBtn = screen.getByRole('button', { name: /Claims Disabled \(Unapproved\)/i });
+      const claimBtn = screen.getAllByRole('button', {
+        name: /Claims Disabled \(Unapproved\)/i,
+      })[0];
       expect(claimBtn.hasAttribute('disabled')).toBe(true);
     });
 
@@ -164,7 +166,7 @@ describe('Organisation Onboarding & Verification — ₹0 Spark Baseline', () =>
 
       expect(screen.queryByText(/Recipient Verification Required/i)).toBeNull();
 
-      const claimBtn = screen.getByRole('button', { name: /Claim Surplus/i });
+      const claimBtn = screen.getAllByRole('button', { name: /Claim Surplus/i })[0];
       expect(claimBtn.hasAttribute('disabled')).toBe(false);
 
       fireEvent.click(claimBtn);
@@ -178,7 +180,9 @@ describe('Organisation Onboarding & Verification — ₹0 Spark Baseline', () =>
         screen.getByText(/Recipient Verification Required \(Status: SUSPENDED\)/i)
       ).toBeDefined();
 
-      const claimBtn = screen.getByRole('button', { name: /Claims Disabled \(Unapproved\)/i });
+      const claimBtn = screen.getAllByRole('button', {
+        name: /Claims Disabled \(Unapproved\)/i,
+      })[0];
       expect(claimBtn.hasAttribute('disabled')).toBe(true);
     });
   });

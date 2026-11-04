@@ -38,6 +38,7 @@ export default function AppShell() {
   const renderMainContent = () => {
     if (activeTab === 'privacy') return <InfoView type="privacy" />;
     if (activeTab === 'help') return <InfoView type="help" />;
+    if (activeTab === 'terms') return <InfoView type="terms" />;
     if (activeTab === 'onboard-org') {
       return (
         <div className="feature-container">
