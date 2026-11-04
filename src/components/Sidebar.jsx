@@ -16,6 +16,7 @@ import {
   Activity,
   HelpCircle,
   FileLock2,
+  Building,
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -77,6 +78,16 @@ export default function Sidebar({ currentRole, activeTab, onSelectTab }) {
       <div className="sidebar-footer">
         <span className="sidebar-section-title">Compliance</span>
         <ul className="sidebar-footer-list">
+          <li>
+            <button
+              type="button"
+              className={`sidebar-footer-link ${activeTab === 'onboard-org' ? 'active' : ''}`}
+              onClick={() => onSelectTab('onboard-org')}
+            >
+              <Building size={16} aria-hidden="true" />
+              <span>Register Organisation</span>
+            </button>
+          </li>
           <li>
             <button
               type="button"

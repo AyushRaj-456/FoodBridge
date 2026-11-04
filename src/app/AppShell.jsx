@@ -11,6 +11,7 @@ import InfoView from '../features/common/InfoView.jsx';
 import AuthModal from '../features/auth/AuthModal.jsx';
 import UserProfileModal from '../features/auth/UserProfileModal.jsx';
 import AccountStateBanner from '../features/auth/AccountStateBanner.jsx';
+import OrgOnboardingForm from '../features/organisations/OrgOnboardingForm.jsx';
 import OrgOnboardingModal from '../features/organisations/OrgOnboardingModal.jsx';
 import './AppShell.css';
 
@@ -37,6 +38,16 @@ export default function AppShell() {
   const renderMainContent = () => {
     if (activeTab === 'privacy') return <InfoView type="privacy" />;
     if (activeTab === 'help') return <InfoView type="help" />;
+    if (activeTab === 'onboard-org') {
+      return (
+        <div className="feature-container">
+          <OrgOnboardingForm
+            onSuccess={() => setActiveTab(DEFAULT_TABS_FOR_ROLE[currentRole])}
+            onCancel={() => setActiveTab(DEFAULT_TABS_FOR_ROLE[currentRole])}
+          />
+        </div>
+      );
+    }
 
     switch (currentRole) {
       case 'donor':
