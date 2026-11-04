@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '../components/Header.jsx';
 import StatusBanner from '../components/StatusBanner.jsx';
 import Sidebar from '../components/Sidebar.jsx';
@@ -13,6 +13,9 @@ import UserProfileModal from '../features/auth/UserProfileModal.jsx';
 import AccountStateBanner from '../features/auth/AccountStateBanner.jsx';
 import OrgOnboardingForm from '../features/organisations/OrgOnboardingForm.jsx';
 import OrgOnboardingModal from '../features/organisations/OrgOnboardingModal.jsx';
+import NotificationInboxModal from '../features/notifications/NotificationInboxModal.jsx';
+import { subscribeToNotifications } from '../features/notifications/notificationService.js';
+import { useAuth } from '../features/auth/useAuth.js';
 import './AppShell.css';
 
 const DEFAULT_TABS_FOR_ROLE = {
@@ -23,12 +26,42 @@ const DEFAULT_TABS_FOR_ROLE = {
 };
 
 export default function AppShell() {
+  const { user } = useAuth();
   const [currentRole, setCurrentRole] = useState('donor');
   const [activeTab, setActiveTab] = useState(DEFAULT_TABS_FOR_ROLE.donor);
-  const [unreadNotifications] = useState(2);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [fromCache, setFromCache] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [onboardModalOpen, setOnboardModalOpen] = useState(false);
+
+  // Subscribe to live in-app notifications while app is open
+  useEffect(() => {
+    if (!user?.uid) {
+      setNotifications([]);
+      setUnreadCount(0);
+      setFromCache(false);
+      return;
+    }
+
+    const unsubscribe = subscribeToNotifications(
+      user.uid,
+      ({ notifications: notifs, unreadCount: count, fromCache: cached }) => {
+        setNotifications(notifs || []);
+        setUnreadCount(count || 0);
+        setFromCache(Boolean(cached));
+      },
+      (err) => {
+        console.warn('In-app notification listener:', err.message);
+      }
+    );
+
+    return () => {
+      if (typeof unsubscribe === 'function') unsubscribe();
+    };
+  }, [user?.uid]);
 
   const handleRoleChange = (newRole) => {
     setCurrentRole(newRole);
@@ -73,7 +106,8 @@ export default function AppShell() {
       <Header
         currentRole={currentRole}
         onRoleChange={handleRoleChange}
-        unreadNotifications={unreadNotifications}
+        unreadNotifications={unreadCount}
+        onOpenNotifications={() => setNotificationsOpen(true)}
         onOpenAuth={() => setAuthModalOpen(true)}
         onOpenProfile={() => setProfileModalOpen(true)}
       />
@@ -100,6 +134,14 @@ export default function AppShell() {
       />
 
       <OrgOnboardingModal isOpen={onboardModalOpen} onClose={() => setOnboardModalOpen(false)} />
+
+      <NotificationInboxModal
+        isOpen={notificationsOpen}
+        onClose={() => setNotificationsOpen(false)}
+        notifications={notifications}
+        unreadCount={unreadCount}
+        fromCache={fromCache}
+      />
     </div>
   );
 }

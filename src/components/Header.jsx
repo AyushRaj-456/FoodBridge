@@ -7,6 +7,7 @@ export default function Header({
   currentRole,
   onRoleChange,
   unreadNotifications = 0,
+  onOpenNotifications,
   onOpenAuth,
   onOpenProfile,
 }) {
@@ -32,6 +33,7 @@ export default function Header({
             <button
               type="button"
               className="icon-btn"
+              onClick={onOpenNotifications}
               aria-label={`In-App Notifications (${unreadNotifications} unread)`}
               title="In-App Notifications Only (Spark Plan)"
             >
