@@ -1,5 +1,6 @@
 import { X, MapPin, ShieldCheck, AlertTriangle } from 'lucide-react';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
+import RouteAuditCard from '../routing/RouteAuditCard.jsx';
 
 export default function ListingDetailModal({
   listing,
@@ -230,6 +231,9 @@ export default function ListingDetailModal({
           <ShieldCheck size={16} />
           <span>Spark ₹0 Invariant: No photo uploads stored. Expiry checked at read time.</span>
         </div>
+
+        {/* Zero-Waste Routing Governance Audit Card */}
+        <RouteAuditCard listing={listing} />
 
         {/* Actions */}
         <div
