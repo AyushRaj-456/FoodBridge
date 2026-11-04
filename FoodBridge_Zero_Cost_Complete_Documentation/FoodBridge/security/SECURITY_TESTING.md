@@ -1,0 +1,3 @@
+# Security Testing
+
+Run static analysis, dependency/license checks and secret scans. Test unauthenticated, wrong-role, wrong-organisation and cross-tenant access in Firebase Emulator Suite. Test IDOR on listings, claims, reports, notifications and audit records. Attempt self-promotion, forged verification, exact-address access before claim, invalid state transitions, duplicate claims, concurrent claims, oversized fields, malicious text and quota-heavy queries. Verify no file upload path, paid API key or forbidden external network endpoint exists. Track severity, owner, remediation and retest evidence.

@@ -1,0 +1,48 @@
+.status-banner {
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--font-size-caption);
+  color: var(--color-text);
+}
+
+.status-banner-inner {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--space-2) var(--gutter-desktop);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.status-banner-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  background-color: var(--color-brand-100);
+  color: var(--color-brand-900);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.status-banner-content {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-muted);
+}
+
+.status-banner-role {
+  color: var(--color-brand-700);
+}
+
+@media (max-width: 768px) {
+  .status-banner-inner {
+    padding: var(--space-2) var(--gutter-mobile);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+  }
+}

@@ -1,0 +1,5 @@
+> **ZERO-COST BUILD RULE (mandatory):** FoodBridge must remain on Firebase **Spark** with no billing account linked. Do not enable Blaze, add a payment method, use paid APIs, or add any service that can generate a bill. If a feature cannot be delivered within a genuinely no-payment-required plan, defer it or provide a manual workflow. Free-tier quotas are hard limits, not permission to upgrade. Never ask the owner to upgrade to solve a quota issue. See `architecture/ZERO_COST_ARCHITECTURE.md` and `architecture/FREE_SERVICE_REGISTER.md`.
+
+# Document Verification Security
+
+Accept only required document types, sizes and counts. Store privately; malware scan and quarantine. OCR is assistive only and never proves authenticity. Compare names/IDs/address and send ambiguity to manual review. Mask sensitive fields in admin queues; reveal on detail view with audit. Never expose object URLs in public APIs/logs. Record reviewer, checklist, decision, reason and timestamps. Revalidate expired documents. Duplicate signals trigger manual review, not automatic accusation. Delete/archive under approved retention schedule.

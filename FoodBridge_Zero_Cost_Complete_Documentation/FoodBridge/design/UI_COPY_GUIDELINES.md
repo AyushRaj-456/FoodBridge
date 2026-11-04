@@ -1,0 +1,5 @@
+> **ZERO-COST BUILD RULE (mandatory):** FoodBridge must remain on Firebase **Spark** with no billing account linked. Do not enable Blaze, add a payment method, use paid APIs, or add any service that can generate a bill. If a feature cannot be delivered within a genuinely no-payment-required plan, defer it or provide a manual workflow. Free-tier quotas are hard limits, not permission to upgrade. Never ask the owner to upgrade to solve a quota issue. See `architecture/ZERO_COST_ARCHITECTURE.md` and `architecture/FREE_SERVICE_REGISTER.md`.
+
+# UI Copy Guidelines
+
+Use plain, respectful, specific language. Prefer “Food listing” to jargon. Always show units (“12 kg”, “35 portions”). Forecasts say “Estimated surplus — not confirmed”. Use “Donor-declared condition”, never “verified fresh”. Explain why an action is blocked and next step. Buttons use direct verbs: “Publish listing”, “Confirm collection”, “Submit documents”. Avoid blame and promises of safety, guaranteed collection or environmental benefit. Dates/times include local timezone context when ambiguous.

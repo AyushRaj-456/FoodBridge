@@ -1,0 +1,3 @@
+# Future Scope
+
+Potential later phases: compost/biogas facility onboarding after SOP approval; moving-average advisory forecast; NGO demand requests; recurring donor drafts; local languages; low-bandwidth improvements; proof-of-distribution workflows that protect privacy; delivery-helper discovery. Any future feature must remain within the ₹0 constraint. SMS/WhatsApp, shared media, background push, automated jobs, AI inference, routing APIs and paid infrastructure are not approved; they remain excluded unless a genuinely no-payment-required solution is verified and owner-approved. Do not use free trials or temporary credits as evidence of zero cost.

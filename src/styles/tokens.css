@@ -1,0 +1,100 @@
+/**
+ * FoodBridge Design Tokens — Calm Civic Utility Palette
+ * Conforms to design/COLOR_TYPOGRAPHY.md and design/design.md
+ */
+
+:root {
+  /* Brand & Core Palette */
+  --color-brand-900: #174b3a;
+  --color-brand-700: #246b50;
+  --color-brand-100: #e7f1eb;
+  --color-accent-600: #b66a35;
+
+  /* Neutral Surface & Typography */
+  --color-text: #18231e;
+  --color-muted: #66736c;
+  --color-surface: #ffffff;
+  --color-canvas: #f5f7f5;
+  --color-border: #dce4de;
+  --color-border-subtle: #edf2ee;
+
+  /* Semantic Feedback (Accessible Contrast AA) */
+  --color-success: #237a4b;
+  --color-success-bg: #eaf5ee;
+  --color-warning: #94621a;
+  --color-warning-bg: #fdf6ec;
+  --color-danger: #b33a32;
+  --color-danger-bg: #fbf0ef;
+  --color-info: #1b5e7d;
+  --color-info-bg: #ebf5fa;
+
+  /* Typography Stack */
+  --font-family-base:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    sans-serif;
+  --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Font Weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  /* Type Scale */
+  --font-size-title-desktop: 1.75rem; /* 28px */
+  --line-height-title-desktop: 2.25rem; /* 36px */
+  --font-size-title-mobile: 1.5rem; /* 24px */
+  --line-height-title-mobile: 2rem; /* 32px */
+
+  --font-size-section: 1.25rem; /* 20px */
+  --line-height-section: 1.75rem; /* 28px */
+
+  --font-size-heading: 1rem; /* 16px */
+  --line-height-heading: 1.5rem; /* 24px */
+
+  --font-size-body: 0.9375rem; /* 15px */
+  --line-height-body: 1.4375rem; /* 23px */
+
+  --font-size-label: 0.8125rem; /* 13px */
+  --line-height-label: 1.125rem; /* 18px */
+
+  --font-size-caption: 0.75rem; /* 12px */
+  --line-height-caption: 1rem; /* 16px */
+
+  /* 4px Base Spacing Scale */
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.25rem; /* 20px */
+  --space-6: 1.5rem; /* 24px */
+  --space-8: 2rem; /* 32px */
+  --space-10: 2.5rem; /* 40px */
+  --space-12: 3rem; /* 48px */
+  --space-16: 4rem; /* 64px */
+
+  /* Geometry & Radii */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-full: 9999px;
+
+  /* Controls & Touch Targets */
+  --control-min-height: 44px;
+  --touch-target-min: 44px;
+
+  /* Elevation (Reserved for Overlays/Dropdowns) */
+  --shadow-overlay: 0 4px 16px rgba(23, 75, 58, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-dropdown: 0 2px 8px rgba(23, 75, 58, 0.06);
+
+  /* Layout Boundaries */
+  --sidebar-width: 256px;
+  --content-max-width: 1440px;
+  --header-height: 60px;
+  --bottom-nav-height: 64px;
+  --gutter-desktop: 24px;
+  --gutter-mobile: 16px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 200ms ease-in-out;
+}

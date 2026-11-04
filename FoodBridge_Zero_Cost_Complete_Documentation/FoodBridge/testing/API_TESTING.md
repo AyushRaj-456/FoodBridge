@@ -1,0 +1,3 @@
+# Firestore Operation Testing
+
+There is no custom REST API in the Spark MVP. Test the Firestore client operations and Security Rules through Firebase Emulator Suite. Cover profile creation, organisation application, admin review, listing publish/update/withdraw, eligible feed query, claim transaction, handover confirmation, mess record entry, notification read state and audit visibility. Include malformed fields, invalid timestamps, expired listing, wrong role, cross-tenant IDs, concurrent claims and quota/network errors. Do not create a mock REST server and present it as production functionality.

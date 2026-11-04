@@ -1,0 +1,3 @@
+# Glossary
+
+Donor: organisation offering surplus food. Recipient: approved NGO, farm or facility. Listing: time-bounded surplus offer. Claim: atomic reservation by one eligible recipient. Handover: physical transfer confirmed by both parties. Route decision: documented destination eligibility. Geohash: compact spatial index used to narrow nearby candidates. Haversine: great-circle straight-line distance calculation. Measured metric: directly recorded quantity. Derived metric: calculated from measured records. Estimated metric: forecast or model output with assumptions. Spark: Firebase no-cost plan with fixed quotas. Blaze: Firebase pay-as-you-go plan, prohibited for this project.
