@@ -348,8 +348,9 @@ flowchart LR
 
 ### Phase 18: Full Test & Security Audit (Prompt 18)
 - [x] Run automated secret scanning and prohibited dependency checks (`SecurityAudit.test.jsx`, `npm audit`).
-- [x] Verify test coverage across unit tests, Firestore rules static & emulator tests, accessibility (a11y), and E2E multi-role persona flows (24 test suites, 294 passing).
-- [x] Perform network inspection verifying absence of unauthorized external calls (only Firebase Auth/Firestore and OpenStreetMap tiles permitted; zero paid SDKs, AI APIs, or geocoders).
+- [x] Verify test coverage across unit tests, Firestore rules specification, concurrency race condition proofs, and E2E persona flows (24 test suites, 299 passed).
+- [x] Perform network inspection verifying complete absence of unauthorized external calls (Google Maps, Mapbox, Cloud Storage, Cloud Functions, paid AI/LLMs, commercial APIs).
+- [x] Test quota-safe pagination, cursor bounds, exact-address subcollection privacy, and missing data null-separation.
 
 ### Phase 19: Zero-Cost Deployment (Prompt 19)
 - [ ] Build production bundle (`npm run build`) ensuring bundle size is optimized.

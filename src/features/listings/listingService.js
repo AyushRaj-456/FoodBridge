@@ -233,14 +233,14 @@ export async function withdrawListing(listingId, user, reason = 'Withdrawn by do
 /**
  * Fetch active listings for a donor organisation with runtime expiry evaluation.
  */
-export async function fetchActiveListings(donorOrgId, pageSize = 50) {
+export async function fetchActiveListings(donorOrgId) {
   if (!donorOrgId) return [];
 
   const q = query(
     collection(db, 'listings'),
     where('donorOrgId', '==', donorOrgId),
     orderBy('createdAt', 'desc'),
-    limit(Math.min(pageSize, 50))
+    limit(50)
   );
 
   const snapshot = await getDocs(q);
@@ -255,14 +255,14 @@ export async function fetchActiveListings(donorOrgId, pageSize = 50) {
 /**
  * Fetch listing history for a donor organisation.
  */
-export async function fetchListingHistory(donorOrgId, pageSize = 50) {
+export async function fetchListingHistory(donorOrgId) {
   if (!donorOrgId) return [];
 
   const q = query(
     collection(db, 'listings'),
     where('donorOrgId', '==', donorOrgId),
     orderBy('createdAt', 'desc'),
-    limit(Math.min(pageSize, 50))
+    limit(50)
   );
 
   const snapshot = await getDocs(q);
