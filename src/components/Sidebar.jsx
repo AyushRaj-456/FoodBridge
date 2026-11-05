@@ -77,8 +77,18 @@ export default function Sidebar({ currentRole, activeTab, onSelectTab }) {
       </div>
 
       <div className="sidebar-footer">
-        <span className="sidebar-section-title">Compliance</span>
+        <span className="sidebar-section-title">Compliance &amp; Verification</span>
         <ul className="sidebar-footer-list">
+          <li>
+            <button
+              type="button"
+              className={`sidebar-footer-link ${activeTab === 'impact-dashboard' ? 'active' : ''}`}
+              onClick={() => onSelectTab('impact-dashboard')}
+            >
+              <BarChart3 size={16} aria-hidden="true" />
+              <span>Impact &amp; Verification</span>
+            </button>
+          </li>
           <li>
             <button
               type="button"

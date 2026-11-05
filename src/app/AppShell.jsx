@@ -14,6 +14,7 @@ import AccountStateBanner from '../features/auth/AccountStateBanner.jsx';
 import OrgOnboardingForm from '../features/organisations/OrgOnboardingForm.jsx';
 import OrgOnboardingModal from '../features/organisations/OrgOnboardingModal.jsx';
 import NotificationInboxModal from '../features/notifications/NotificationInboxModal.jsx';
+import ImpactDashboard from '../features/impact/ImpactDashboard.jsx';
 import { subscribeToNotifications } from '../features/notifications/notificationService.js';
 import { useAuth } from '../features/auth/useAuth.js';
 import './AppShell.css';
@@ -72,6 +73,7 @@ export default function AppShell() {
     if (activeTab === 'privacy') return <InfoView type="privacy" />;
     if (activeTab === 'help') return <InfoView type="help" />;
     if (activeTab === 'terms') return <InfoView type="terms" />;
+    if (activeTab === 'impact' || activeTab === 'impact-dashboard') return <ImpactDashboard />;
     if (activeTab === 'onboard-org') {
       return (
         <div className="feature-container">
