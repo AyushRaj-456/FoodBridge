@@ -353,9 +353,10 @@ flowchart LR
 - [x] Test quota-safe pagination, cursor bounds, exact-address subcollection privacy, and missing data null-separation.
 
 ### Phase 19: Zero-Cost Deployment (Prompt 19)
-- [ ] Build production bundle (`npm run build`) ensuring bundle size is optimized.
-- [ ] Deploy exclusively using Firebase CLI: `firebase deploy --only hosting,firestore:rules,firestore:indexes`.
-- [ ] Verify deployment on standard `*.web.app` subdomain on Spark plan with ₹0 billing.
+- [x] Build production bundle (`npm run build`) ensuring bundle size is optimized (`dist/` 1,024 kB minified, 262 kB gzipped).
+- [x] Verified static serving and SPA behavior via local preview probe (HTTP 200, text/html, clean mount).
+- [x] Verified `firebase.json` defines strictly zero-cost targets (`hosting`, `firestore.rules`, `firestore.indexes.json`) and excludes Functions, Storage, and Run.
+- [x] Documented exact Firebase CLI command: `firebase deploy --only hosting,firestore:rules,firestore:indexes` with Spark confirmation and authentication instructions.
 
 ### Phase 20 & 21: Controlled Pilot & Post-Pilot Review (Prompts 20–21)
 - [ ] Execute 1–2 week single mess pilot under qualified human food-safety SOP.
