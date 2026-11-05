@@ -342,9 +342,9 @@ flowchart LR
 - [ ] Display explicit formulas, factors, and sources for any environmental estimates (e.g. CO2e avoided).
 
 ### Phase 17: Admin Moderation & Controls (Prompt 17)
-- [ ] Implement moderation queues for flagged listings, dispute reports, and organization reviews.
-- [ ] Enforce audit logging for administrative suspensions and status changes.
-- [ ] Run test suite verifying regular users cannot access administrative endpoints.
+- [x] Implement moderation queues for flagged listings, dispute reports, and organization reviews (`adminService.js`, `AdminShell.jsx`).
+- [x] Enforce audit logging for administrative suspensions, status changes, listings moderation, and report resolutions (`auditEvents` append-only).
+- [x] Run test suite verifying regular users cannot access administrative endpoints, test privilege escalation, IDOR, and cross-tenant access (`AdminModeration.test.jsx`).
 
 ### Phase 18: Full Test & Security Audit (Prompt 18)
 - [ ] Run automated secret scanning and prohibited dependency checks.
