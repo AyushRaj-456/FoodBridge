@@ -7,6 +7,7 @@ import {
   query,
   where,
   orderBy,
+  limit,
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../../lib/firebase.js';
@@ -232,13 +233,14 @@ export async function withdrawListing(listingId, user, reason = 'Withdrawn by do
 /**
  * Fetch active listings for a donor organisation with runtime expiry evaluation.
  */
-export async function fetchActiveListings(donorOrgId) {
+export async function fetchActiveListings(donorOrgId, pageSize = 50) {
   if (!donorOrgId) return [];
 
   const q = query(
     collection(db, 'listings'),
     where('donorOrgId', '==', donorOrgId),
-    orderBy('createdAt', 'desc')
+    orderBy('createdAt', 'desc'),
+    limit(Math.min(pageSize, 50))
   );
 
   const snapshot = await getDocs(q);
@@ -253,13 +255,14 @@ export async function fetchActiveListings(donorOrgId) {
 /**
  * Fetch listing history for a donor organisation.
  */
-export async function fetchListingHistory(donorOrgId) {
+export async function fetchListingHistory(donorOrgId, pageSize = 50) {
   if (!donorOrgId) return [];
 
   const q = query(
     collection(db, 'listings'),
     where('donorOrgId', '==', donorOrgId),
-    orderBy('createdAt', 'desc')
+    orderBy('createdAt', 'desc'),
+    limit(Math.min(pageSize, 50))
   );
 
   const snapshot = await getDocs(q);
