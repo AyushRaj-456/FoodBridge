@@ -347,9 +347,9 @@ flowchart LR
 - [x] Run test suite verifying regular users cannot access administrative endpoints, test privilege escalation, IDOR, and cross-tenant access (`AdminModeration.test.jsx`).
 
 ### Phase 18: Full Test & Security Audit (Prompt 18)
-- [ ] Run automated secret scanning and prohibited dependency checks.
-- [ ] Verify test coverage across unit tests, Firestore rules emulator tests, and Playwright E2E flows.
-- [ ] Perform network inspection verifying absence of unauthorized external calls.
+- [x] Run automated secret scanning and prohibited dependency checks (`SecurityAudit.test.jsx`, `npm audit`).
+- [x] Verify test coverage across unit tests, Firestore rules static & emulator tests, accessibility (a11y), and E2E multi-role persona flows (24 test suites, 294 passing).
+- [x] Perform network inspection verifying absence of unauthorized external calls (only Firebase Auth/Firestore and OpenStreetMap tiles permitted; zero paid SDKs, AI APIs, or geocoders).
 
 ### Phase 19: Zero-Cost Deployment (Prompt 19)
 - [ ] Build production bundle (`npm run build`) ensuring bundle size is optimized.
