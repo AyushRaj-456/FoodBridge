@@ -11,6 +11,7 @@ import {
 import { useAuth } from '../auth/useAuth.js';
 import VerificationQueue from './VerificationQueue.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
+import { moderateListing, resolveIncidentReport } from './adminService.js';
 import './admin.css';
 
 const SAMPLE_MODERATION_LISTINGS = [
@@ -178,15 +179,41 @@ export default function AdminShell({ activeTab }) {
     );
   }
 
-  const handleWithdrawByAdmin = (id) => {
+  const handleWithdrawByAdmin = async (id) => {
     setModerationListings((prev) =>
       prev.map((l) => (l.id === id ? { ...l, status: 'withdrawn' } : l))
     );
     setModerationNotice(`Listing ${id} withdrawn by administrator.`);
+
+    try {
+      if (user && isAdmin) {
+        await moderateListing({
+          listingId: id,
+          action: 'withdrawn',
+          reason: 'Listing withdrawn by administrator for safety review',
+          adminUser: user,
+        });
+      }
+    } catch (err) {
+      console.warn('[AdminShell] Non-blocking moderateListing sync warning:', err.message);
+    }
   };
 
-  const handleResolveReport = (id) => {
+  const handleResolveReport = async (id) => {
     setReports((prev) => prev.map((r) => (r.id === id ? { ...r, status: 'resolved' } : r)));
+
+    try {
+      if (user && isAdmin) {
+        await resolveIncidentReport({
+          reportId: id,
+          resolution: 'resolved',
+          resolutionNotes: 'Marked resolved by administrator',
+          adminUser: user,
+        });
+      }
+    } catch (err) {
+      console.warn('[AdminShell] Non-blocking resolveIncidentReport sync warning:', err.message);
+    }
   };
 
   return (

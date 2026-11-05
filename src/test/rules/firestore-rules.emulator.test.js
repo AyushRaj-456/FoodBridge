@@ -367,4 +367,108 @@ describe('Firestore Security Rules — Comprehensive Emulator Integration Tests'
       await assertFails(getDoc(doc(bobDb, 'notifications', 'notif_alice')));
     });
   });
+
+  describe('Admin Moderation, Incident Reports & Append-Only Audit Integrity', () => {
+    beforeEach(async () => {
+      if (testEnv) {
+        await testEnv.withSecurityRulesDisabled(async (context) => {
+          const rawDb = context.firestore();
+          await setDoc(doc(rawDb, 'admins', 'admin_uid'), { role: 'admin' });
+          await setDoc(doc(rawDb, 'organisations', 'org_pending'), {
+            displayName: 'Pending NGO',
+            status: 'pending',
+            createdBy: 'bob',
+          });
+          await setDoc(doc(rawDb, 'reports', 'rep_alice'), {
+            reporterUid: 'alice',
+            category: 'Hygiene Concern',
+            description: 'Food hygiene issue observed at dispatch counter.',
+            status: 'pending',
+          });
+        });
+      }
+    });
+
+    it('denies non-admin from approving organisation status', async () => {
+      const bobDb = testEnv.authenticatedContext('bob').firestore();
+      await assertFails(
+        setDoc(doc(bobDb, 'organisations', 'org_pending'), { status: 'approved' }, { merge: true })
+      );
+    });
+
+    it('allows console-provisioned admin to approve organisation status', async () => {
+      const adminDb = testEnv.authenticatedContext('admin_uid').firestore();
+      await assertSucceeds(
+        setDoc(
+          doc(adminDb, 'organisations', 'org_pending'),
+          { status: 'approved' },
+          { merge: true }
+        )
+      );
+    });
+
+    it('allows user to create their own incident report', async () => {
+      const aliceDb = testEnv.authenticatedContext('alice').firestore();
+      await assertSucceeds(
+        setDoc(doc(aliceDb, 'reports', 'rep_new'), {
+          reporterUid: 'alice',
+          category: 'Late Collection',
+          description: 'Recipient arrived 60 minutes after agreed pickup window.',
+          status: 'pending',
+        })
+      );
+    });
+
+    it('denies non-admin from resolving or updating another user report (IDOR protection)', async () => {
+      const bobDb = testEnv.authenticatedContext('bob').firestore();
+      await assertFails(
+        setDoc(doc(bobDb, 'reports', 'rep_alice'), { status: 'resolved' }, { merge: true })
+      );
+    });
+
+    it('allows admin to update incident report status', async () => {
+      const adminDb = testEnv.authenticatedContext('admin_uid').firestore();
+      await assertSucceeds(
+        setDoc(doc(adminDb, 'reports', 'rep_alice'), { status: 'resolved' }, { merge: true })
+      );
+    });
+
+    it('denies non-admin from reading verification reviews', async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const rawDb = context.firestore();
+        await setDoc(doc(rawDb, 'verificationReviews', 'rev_1'), {
+          orgId: 'org_pending',
+          reviewerUid: 'admin_uid',
+          decision: 'approved',
+        });
+      });
+
+      const bobDb = testEnv.authenticatedContext('bob').firestore();
+      await assertFails(getDoc(doc(bobDb, 'verificationReviews', 'rev_1')));
+
+      const adminDb = testEnv.authenticatedContext('admin_uid').firestore();
+      await assertSucceeds(getDoc(doc(adminDb, 'verificationReviews', 'rev_1')));
+    });
+
+    it('denies all clients (including admin) from updating or deleting append-only audit events', async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        const rawDb = context.firestore();
+        await setDoc(doc(rawDb, 'auditEvents', 'audit_immutable'), {
+          actorUid: 'admin_uid',
+          action: 'ORG_VERIFIED_APPROVED',
+          summary: 'Approved pending NGO',
+        });
+      });
+
+      const adminDb = testEnv.authenticatedContext('admin_uid').firestore();
+      await assertFails(
+        setDoc(
+          doc(adminDb, 'auditEvents', 'audit_immutable'),
+          { summary: 'Forged audit summary' },
+          { merge: true }
+        )
+      );
+      await assertFails(deleteDoc(doc(adminDb, 'auditEvents', 'audit_immutable')));
+    });
+  });
 });

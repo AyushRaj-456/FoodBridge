@@ -104,6 +104,26 @@ describe('Firestore Schema & Domain Security Invariants', () => {
       const reviewSection = rules.slice(rules.indexOf('match /verificationReviews/{reviewId}'));
       expect(reviewSection).toContain('allow read, write: if isAdmin();');
     });
+
+    it('protects incident reports: authenticated create, admin update and delete', () => {
+      const reportsSection = rules.slice(rules.indexOf('match /reports/{reportId}'));
+      expect(reportsSection).toContain('allow create: if isAuthenticated() &&');
+      expect(reportsSection).toContain('request.resource.data.reporterUid == request.auth.uid;');
+      expect(reportsSection).toContain('allow update, delete: if isAdmin();');
+    });
+
+    it('prevents privilege escalation by denying client writes to /admins', () => {
+      const adminsSection = rules.slice(rules.indexOf('match /admins/{userId}'));
+      expect(adminsSection).toContain('allow write: if false;');
+      expect(adminsSection).toContain('allow read: if isAuthenticated();');
+    });
+
+    it('enforces cross-tenant isolation on organisation status and member profile modifications', () => {
+      const orgSection = rules.slice(rules.indexOf('match /organisations/{orgId}'));
+      expect(orgSection).toContain('allow update: if isAdmin() || (');
+      expect(orgSection).toContain('isOrgMember(orgId)');
+      expect(orgSection).toContain('allow delete: if false;');
+    });
   });
 
   describe('State Machine & Transition Logic', () => {
