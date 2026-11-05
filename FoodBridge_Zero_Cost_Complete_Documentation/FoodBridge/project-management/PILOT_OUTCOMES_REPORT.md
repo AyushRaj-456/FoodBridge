@@ -118,3 +118,4 @@ Real-time usage was monitored daily against published Google Cloud Firebase Spar
 1. **Continue Single-Mess Operations:** Maintain current donor mess while onboarding verified dining hall coordinators.
 2. **Preserve ₹0 Budget Invariants:** Maintain strictly zero Cloud Functions, zero Cloud Storage, and client-side moving averages.
 3. **Keep Animal & Compost Tiers Disabled:** Animal-feed and vermicompost tiers must remain locked until institutional livestock eligibility frameworks and dedicated collection SOPs are established.
+

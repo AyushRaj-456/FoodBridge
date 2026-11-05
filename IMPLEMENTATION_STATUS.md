@@ -365,9 +365,9 @@ flowchart LR
 - [x] Documented measured physical outcomes and qualitative feedback from kitchen supervisors and NGO coordinators.
 
 ### Phase 21: Post-Pilot Review (Prompt 21)
-- [ ] Review outcomes, reliability, quotas and costs.
-- [ ] Propose future features only if they can remain genuinely free without billing details.
-- [ ] Update all docs and cost register.
+- [x] Comprehensive review of empirical outcomes, reliability, Spark quotas, and zero costs (`POST_PILOT_REVIEW.md`).
+- [x] Evaluated future enhancements strictly against ₹0 build constraint (approved: PWA offline caching, client QR scanning, client CSV export, static multilingual bundles; permanently deferred: Cloud Storage, SMS, Cloud Functions, paid maps, hosted AI).
+- [x] Updated all architecture documentation, cost register (`FREE_SERVICE_REGISTER.md`), open decisions (`OPEN_DECISIONS.md`), future scope (`FUTURE_SCOPE.md`), and risk register (`RISK_REGISTER.md`).
 
 ---
 
