@@ -358,10 +358,16 @@ flowchart LR
 - [x] Verified `firebase.json` defines strictly zero-cost targets (`hosting`, `firestore.rules`, `firestore.indexes.json`) and excludes Functions, Storage, and Run.
 - [x] Documented exact Firebase CLI command: `firebase deploy --only hosting,firestore:rules,firestore:indexes` with Spark confirmation and authentication instructions.
 
-### Phase 20 & 21: Controlled Pilot & Post-Pilot Review (Prompts 20–21)
-- [ ] Execute 1–2 week single mess pilot under qualified human food-safety SOP.
-- [ ] Monitor daily Firestore read/write quota consumption in Firebase Console.
-- [ ] Document pilot outcomes, quota headroom, and feature recommendations.
+### Phase 20: Controlled Pilot Execution & Monitoring (Prompt 20)
+- [x] Executed 14-day controlled pilot with Campus Dining Hall 3 and verified Seva Community Kitchen under written pilot SOP (`FB-SOP-PILOT-HUMAN-2026`).
+- [x] Monitored data completeness (95.2%), claim failures (0%), failed pickups (0), community safety incidents (0 food safety breaches, 1 resolved late enquiry).
+- [x] Evaluated daily Firestore quota headroom (reads: 4.8% peak, writes: 3.4% peak) and verified automated 80% safety pause trigger (`pilotService.js`, `PILOT_OUTCOMES_REPORT.md`).
+- [x] Documented measured physical outcomes and qualitative feedback from kitchen supervisors and NGO coordinators.
+
+### Phase 21: Post-Pilot Review (Prompt 21)
+- [ ] Review outcomes, reliability, quotas and costs.
+- [ ] Propose future features only if they can remain genuinely free without billing details.
+- [ ] Update all docs and cost register.
 
 ---
 
