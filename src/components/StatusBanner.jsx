@@ -34,6 +34,16 @@ function formatRoleName(role) {
       return 'Mess Operator';
     case 'admin':
       return 'Administrator';
+    case 'farm':
+      return 'Cattle & Dairy Farm';
+    case 'compost':
+      return 'Composting & Biogas Facility';
+    case 'routing':
+      return 'Three-Tier Routing Monitor';
+    case 'helper':
+      return 'Delivery Helper (Future Scope)';
+    case 'public':
+      return 'Public Community Member';
     default:
       return role;
   }

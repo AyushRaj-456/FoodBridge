@@ -8,27 +8,49 @@ import {
   Utensils,
   ShieldAlert,
   FileText,
+  Wheat,
+  Recycle,
+  Layers,
+  Bike,
+  LayoutDashboard,
 } from 'lucide-react';
 import './BottomNav.css';
 
 const PRIMARY_MOBILE_ITEMS = {
   donor: [
+    { id: 'donor-dashboard', label: 'Overview', icon: LayoutDashboard },
     { id: 'create-listing', label: 'Create', icon: PlusCircle },
     { id: 'active-listings', label: 'Listings', icon: PackageCheck },
     { id: 'pickup-status', label: 'Pickup', icon: Truck },
   ],
   recipient: [
+    { id: 'ngo-dashboard', label: 'Overview', icon: LayoutDashboard },
     { id: 'available-feed', label: 'Feed', icon: Compass },
     { id: 'my-claims', label: 'Claims', icon: CheckCircle },
     { id: 'handover-confirm', label: 'Handover', icon: Truck },
+  ],
+  farm: [
+    { id: 'feed-dashboard', label: 'Farm', icon: LayoutDashboard },
+    { id: 'feed-discovery', label: 'Feed', icon: Wheat },
+    { id: 'farm-history', label: 'History', icon: Truck },
+  ],
+  compost: [
+    { id: 'facility-dashboard', label: 'Facility', icon: LayoutDashboard },
+    { id: 'waste-discovery', label: 'Waste', icon: Recycle },
+    { id: 'processing-history', label: 'Logs', icon: Truck },
   ],
   mess_operator: [
     { id: 'meal-entry', label: 'Meals', icon: Calendar },
     { id: 'leftover-records', label: 'Leftover', icon: Utensils },
   ],
+  routing: [{ id: 'routing-matrix', label: 'Routing', icon: Layers }],
   admin: [
     { id: 'verification-queue', label: 'Verify', icon: ShieldAlert },
     { id: 'moderate-listings', label: 'Moderate', icon: FileText },
+  ],
+  helper: [
+    { id: 'nearby-jobs', label: 'Jobs', icon: Bike },
+    { id: 'otp-verify', label: 'OTP', icon: CheckCircle },
   ],
 };
 

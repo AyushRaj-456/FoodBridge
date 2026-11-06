@@ -24,6 +24,8 @@ import {
   withdrawListing,
 } from './listingService.js';
 import { AuthContext } from '../auth/useAuth.js';
+import InAppCameraCapture from './InAppCameraCapture.jsx';
+import DonorDashboardView from '../donor/DonorDashboardView.jsx';
 
 const INITIAL_SAMPLE_LISTINGS = [
   {
@@ -125,12 +127,13 @@ const INITIAL_SAMPLE_HISTORY = [
   },
 ];
 
-export default function ListingShell({ activeTab = 'active-listings' }) {
+export default function ListingShell({ activeTab = 'active-listings', onSelectTab }) {
   const auth = useContext(AuthContext);
   const user = auth?.user || null;
   const [listings, setListings] = useState(() => INITIAL_SAMPLE_LISTINGS.map(checkListingExpiry));
   const [history] = useState(INITIAL_SAMPLE_HISTORY);
   const [filterQuery, setFilterQuery] = useState('');
+  const [capturedPhoto, setCapturedPhoto] = useState(null);
 
   // Modals & Selection
   const [selectedListingForDetail, setSelectedListingForDetail] = useState(null);
@@ -192,6 +195,7 @@ export default function ListingShell({ activeTab = 'active-listings' }) {
 
   const handleCancelEdit = () => {
     setEditingListing(null);
+    setCapturedPhoto(null);
     setFormValues({
       title: '',
       category: 'cooked_meals',
@@ -329,6 +333,9 @@ export default function ListingShell({ activeTab = 'active-listings' }) {
           location: formValues.location || 'Central Mess Dispatch',
           routeTier: formValues.routeTier || 'human',
           status: formValues.status || 'published',
+          liveSnapshot: capturedPhoto
+            ? { timestamp: capturedPhoto.timestamp, verified: true }
+            : null,
           fulfillment: {
             exactAddress: formValues.exactAddress || formValues.location,
             contactPhone: formValues.contactPhone,
@@ -366,6 +373,18 @@ export default function ListingShell({ activeTab = 'active-listings' }) {
           </p>
         </div>
       </div>
+
+      {/* View 0: Donor Dashboard Overview */}
+      {activeTab === 'donor-dashboard' && (
+        <div style={{ marginTop: 'var(--space-4)' }}>
+          <DonorDashboardView
+            listings={listings}
+            onNavigateTab={onSelectTab || (() => {})}
+            onOpenCreateListing={() => (onSelectTab ? onSelectTab('create-listing') : null)}
+            onViewListing={(lst) => setSelectedListingForDetail(lst)}
+          />
+        </div>
+      )}
 
       {/* View 1: Active Listings */}
       {(activeTab === 'active-listings' || activeTab === 'listings') && (
@@ -808,6 +827,11 @@ export default function ListingShell({ activeTab = 'active-listings' }) {
                 </div>
               </div>
 
+              {/* Step 2: Live In-App Camera Verification */}
+              <div style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-2)' }}>
+                <InAppCameraCapture onCapture={(photo) => setCapturedPhoto(photo)} />
+              </div>
+
               <div
                 style={{
                   display: 'grid',
@@ -944,6 +968,13 @@ export default function ListingShell({ activeTab = 'active-listings' }) {
                     }
                   />
                 </div>
+              </div>
+
+              <div style={{ marginTop: 'var(--space-4)' }}>
+                <InAppCameraCapture
+                  onCapture={(photo) => setCapturedPhoto(photo)}
+                  initialPhoto={capturedPhoto?.dataUrl || null}
+                />
               </div>
 
               <div

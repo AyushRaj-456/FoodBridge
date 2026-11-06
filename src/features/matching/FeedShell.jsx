@@ -19,6 +19,7 @@ import EmptyState from '../../components/common/EmptyState.jsx';
 import MapView from '../location/MapView.jsx';
 import { DEFAULT_CAMPUS_LANDMARKS } from '../location/locationService.js';
 import { RADIUS_BANDS_KM } from './matchingService.js';
+import NgoDashboardView from '../ngo/NgoDashboardView.jsx';
 
 const SAMPLE_SURPLUS_OPPORTUNITIES = [
   {
@@ -99,7 +100,13 @@ const SAMPLE_RECIPIENT_HISTORY = [
   },
 ];
 
-export default function FeedShell({ activeTab, initialOrgStatus = 'pending' }) {
+export default function FeedShell({
+  activeTab,
+  initialOrgStatus = 'pending',
+  onSelectTab,
+  onOpenDemandRequest,
+  onOpenDistributionProof,
+}) {
   const [recipientOrgStatus, setRecipientOrgStatus] = useState(initialOrgStatus);
   const [dietFilter, setDietFilter] = useState('all');
   const [claims, setClaims] = useState(SAMPLE_ACTIVE_CLAIMS);
@@ -165,6 +172,18 @@ export default function FeedShell({ activeTab, initialOrgStatus = 'pending' }) {
           <p className="text-muted">Direct Redistribution Network for Verified Welfare Groups</p>
         </div>
       </div>
+
+      {/* View 0: NGO Dashboard Overview */}
+      {activeTab === 'ngo-dashboard' && (
+        <div style={{ marginTop: 'var(--space-4)' }}>
+          <NgoDashboardView
+            orgStatus={recipientOrgStatus}
+            onNavigateTab={onSelectTab || (() => {})}
+            onOpenDemandRequest={onOpenDemandRequest}
+            onOpenDistributionProof={onOpenDistributionProof}
+          />
+        </div>
+      )}
 
       {/* Recipient Verification Required Banner */}
       {!isEligibleToClaim && (

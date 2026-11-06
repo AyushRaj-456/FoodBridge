@@ -1,14 +1,25 @@
 /**
- * FoodBridge Design Tokens — Calm Civic Utility Palette
- * Conforms to design/COLOR_TYPOGRAPHY.md and design/design.md
+ * FoodBridge Design Tokens — Calm Civic Utility & Nature-Inspired Premium Palette
+ * Conforms to Section 2 of FoodBridge Complete Website UI/UX Specification
+ * and maintains backward-compatibility with design/COLOR_TYPOGRAPHY.md
  */
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap');
+
 :root {
-  /* Brand & Core Palette */
+  /* Brand & Core Palette (Compatibility with test suite) */
   --color-brand-900: #174b3a;
   --color-brand-700: #246b50;
   --color-brand-100: #e7f1eb;
   --color-accent-600: #b66a35;
+
+  /* Specification Section 2.3 Tokens (Light Theme Baseline) */
+  --color-primary: #166534;
+  --color-primary-hover: #14532d;
+  --color-secondary: #22c55e;
+  --color-secondary-hover: #16a34a;
+  --color-accent: #f59e0b;
+  --color-accent-hover: #d97706;
 
   /* Neutral Surface & Typography */
   --color-text: #18231e;
@@ -18,19 +29,54 @@
   --color-border: #dce4de;
   --color-border-subtle: #edf2ee;
 
-  /* Semantic Feedback (Accessible Contrast AA) */
+  /* Surfaces & Backgrounds */
+  --color-bg-light: #f7f5ee;
+  --color-surface-light: #ffffff;
+  --color-border-light: #e5e7eb;
+
+  /* Typography Colors */
+  --color-text-primary-light: #17231c;
+  --color-text-secondary-light: #647067;
+  --color-text-tertiary: #8a968e;
+
+  --color-surface-hover: #f9fbf9;
+  --color-surface-active: #f0f4f1;
+
+  /* Semantic Feedback & Statuses (Accessible AA/AAA Contrast) */
   --color-success: #237a4b;
   --color-success-bg: #eaf5ee;
+  --color-success-border: #c3e6cf;
+
   --color-warning: #94621a;
   --color-warning-bg: #fdf6ec;
+  --color-warning-border: #fae0b8;
+
   --color-danger: #b33a32;
   --color-danger-bg: #fbf0ef;
+  --color-danger-border: #f5c7c4;
+
   --color-info: #1b5e7d;
   --color-info-bg: #ebf5fa;
+  --color-info-border: #c2e2f2;
 
-  /* Typography Stack */
+  --color-pending: #d97706;
+  --color-pending-bg: #fef3c7;
+  --color-pending-border: #fde68a;
+
+  --color-expired: #6b7280;
+  --color-expired-bg: #f3f4f6;
+  --color-expired-border: #e5e7eb;
+
+  --color-verified: #166534;
+  --color-verified-bg: #dcfce7;
+  --color-verified-border: #86efac;
+
+  /* Typography Stack — Inter for UI, Manrope for Key Headings */
   --font-family-base:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    sans-serif;
+  --font-family-heading:
+    Manrope, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     sans-serif;
   --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
@@ -38,21 +84,29 @@
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
 
-  /* Type Scale */
-  --font-size-title-desktop: 1.75rem; /* 28px */
-  --line-height-title-desktop: 2.25rem; /* 36px */
-  --font-size-title-mobile: 1.5rem; /* 24px */
-  --line-height-title-mobile: 2rem; /* 32px */
+  /* Type Scale — Section 2.4 Hierarchical Scale */
+  --font-size-display: 2.5rem; /* 40px */
+  --line-height-display: 3rem; /* 48px */
 
-  --font-size-section: 1.25rem; /* 20px */
-  --line-height-section: 1.75rem; /* 28px */
+  --font-size-title-desktop: 2.25rem; /* 36px */
+  --line-height-title-desktop: 2.75rem; /* 44px */
+  --font-size-title-mobile: 1.625rem; /* 26px */
+  --line-height-title-mobile: 2.125rem; /* 34px */
+
+  --font-size-section: 1.5rem; /* 24px */
+  --line-height-section: 2rem; /* 32px */
+
+  --font-size-card-heading: 1.125rem; /* 18px */
+  --line-height-card-heading: 1.625rem; /* 26px */
 
   --font-size-heading: 1rem; /* 16px */
   --line-height-heading: 1.5rem; /* 24px */
 
   --font-size-body: 0.9375rem; /* 15px */
-  --line-height-body: 1.4375rem; /* 23px */
+  --line-height-body: 1.5rem; /* 24px */
 
   --font-size-label: 0.8125rem; /* 13px */
   --line-height-label: 1.125rem; /* 18px */
@@ -61,6 +115,7 @@
   --line-height-caption: 1rem; /* 16px */
 
   /* 4px Base Spacing Scale */
+  --space-0-5: 0.125rem; /* 2px */
   --space-1: 0.25rem; /* 4px */
   --space-2: 0.5rem; /* 8px */
   --space-3: 0.75rem; /* 12px */
@@ -71,11 +126,15 @@
   --space-10: 2.5rem; /* 40px */
   --space-12: 3rem; /* 48px */
   --space-16: 4rem; /* 64px */
+  --space-20: 5rem; /* 80px */
+  --space-24: 6rem; /* 96px */
 
   /* Geometry & Radii */
+  --radius-xs: 4px;
   --radius-sm: 6px;
   --radius-md: 8px;
-  --radius-lg: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
   --radius-full: 9999px;
 
   /* Controls & Touch Targets */
@@ -83,18 +142,84 @@
   --touch-target-min: 44px;
 
   /* Elevation (Reserved for Overlays/Dropdowns) */
-  --shadow-overlay: 0 4px 16px rgba(23, 75, 58, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
-  --shadow-dropdown: 0 2px 8px rgba(23, 75, 58, 0.06);
+  --shadow-sm: 0 1px 2px rgba(16, 28, 23, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(16, 28, 23, 0.07), 0 2px 4px -2px rgba(16, 28, 23, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(16, 28, 23, 0.08), 0 4px 6px -4px rgba(16, 28, 23, 0.04);
+  --shadow-overlay: 0 12px 32px rgba(16, 28, 23, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+  --shadow-dropdown: 0 4px 12px rgba(16, 28, 23, 0.08);
 
   /* Layout Boundaries */
   --sidebar-width: 256px;
   --content-max-width: 1440px;
-  --header-height: 60px;
+  --header-height: 64px;
   --bottom-nav-height: 64px;
-  --gutter-desktop: 24px;
+  --gutter-desktop: 28px;
   --gutter-mobile: 16px;
 
   /* Transitions */
-  --transition-fast: 150ms ease-in-out;
-  --transition-normal: 200ms ease-in-out;
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================================================
+   Section 2.7: Complete Dark Theme Implementation
+   Carefully tuned surface, contrast, and border hierarchy (not an inversion)
+   ========================================================================== */
+
+[data-theme='dark'] {
+  /* Specification Section 2.3 Dark Theme Tokens */
+  --color-canvas: #101c17;
+  --color-surface: #192820;
+  --color-surface-hover: #21352b;
+  --color-surface-active: #284034;
+  --color-border: #304237;
+  --color-border-subtle: #24352b;
+
+  --color-text: #f3f7f3;
+  --color-muted: #9ab0a1;
+  --color-text-tertiary: #6b8273;
+
+  --color-primary: #22c55e;
+  --color-primary-hover: #4ade80;
+  --color-brand-900: #22c55e;
+  --color-brand-700: #4ade80;
+  --color-brand-100: #1a3325;
+  --color-accent-600: #f59e0b;
+
+  /* Semantic Feedback in Dark Theme (Readable, non-harsh) */
+  --color-success: #4ade80;
+  --color-success-bg: #143322;
+  --color-success-border: #1e5236;
+
+  --color-warning: #fbbf24;
+  --color-warning-bg: #33240e;
+  --color-warning-border: #523b16;
+
+  --color-danger: #f87171;
+  --color-danger-bg: #381515;
+  --color-danger-border: #592323;
+
+  --color-info: #38bdf8;
+  --color-info-bg: #112836;
+  --color-info-border: #1e445b;
+
+  --color-pending: #fbbf24;
+  --color-pending-bg: #33240e;
+  --color-pending-border: #523b16;
+
+  --color-expired: #9ca3af;
+  --color-expired-bg: #1f2923;
+  --color-expired-border: #37413c;
+
+  --color-verified: #4ade80;
+  --color-verified-bg: #143322;
+  --color-verified-border: #1e5236;
+
+  /* Dark Elevation */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
+  --shadow-overlay: 0 16px 36px rgba(0, 0, 0, 0.65), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-dropdown: 0 6px 18px rgba(0, 0, 0, 0.5);
 }
