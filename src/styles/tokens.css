@@ -12,50 +12,59 @@
   --color-brand-700: #246b50;
   --color-brand-100: #e7f1eb;
   --color-accent-600: #b66a35;
-
-  /* Specification Section 2.3 Tokens (Light Theme Baseline) */
-  --color-primary: #166534;
-  --color-primary-hover: #14532d;
-  --color-secondary: #22c55e;
-  --color-secondary-hover: #16a34a;
-  --color-accent: #f59e0b;
-  --color-accent-hover: #d97706;
-
-  /* Neutral Surface & Typography */
   --color-text: #18231e;
   --color-muted: #66736c;
   --color-surface: #ffffff;
   --color-canvas: #f5f7f5;
   --color-border: #dce4de;
+  --color-success: #237a4b;
+  --color-warning: #94621a;
+  --color-danger: #b33a32;
+
+  /* Specification Section 4 Design System Tokens (Light Theme Baseline) */
+  --color-primary: #245c45;
+  --color-primary-hover: #1c4b38;
+  --color-secondary: #3d785b;
+  --color-secondary-hover: #2f6149;
+  --color-light-green: #eaf2ec;
+  --color-accent: #f59e0b;
+  --color-accent-hover: #d97706;
+
+  /* Neutral Surface & Typography */
+  --color-page-bg: #f7f8f5;
+  --color-text-primary: #202923;
+  --color-text-secondary: #66736b;
+  --color-text-muted: #89928b;
+  --color-border-clean: #e3e8e3;
   --color-border-subtle: #edf2ee;
 
   /* Surfaces & Backgrounds */
-  --color-bg-light: #f7f5ee;
+  --color-bg-light: #f7f8f5;
   --color-surface-light: #ffffff;
-  --color-border-light: #e5e7eb;
+  --color-border-light: #e3e8e3;
 
   /* Typography Colors */
-  --color-text-primary-light: #17231c;
-  --color-text-secondary-light: #647067;
-  --color-text-tertiary: #8a968e;
+  --color-text-primary-light: #202923;
+  --color-text-secondary-light: #66736b;
+  --color-text-tertiary: #89928b;
 
   --color-surface-hover: #f9fbf9;
-  --color-surface-active: #f0f4f1;
+  --color-surface-active: #eaf2ec;
 
   /* Semantic Feedback & Statuses (Accessible AA/AAA Contrast) */
-  --color-success: #237a4b;
+  --color-success-clean: #278451;
   --color-success-bg: #eaf5ee;
   --color-success-border: #c3e6cf;
 
-  --color-warning: #94621a;
+  --color-warning-clean: #b7791f;
   --color-warning-bg: #fdf6ec;
   --color-warning-border: #fae0b8;
 
-  --color-danger: #b33a32;
+  --color-danger-clean: #c44747;
   --color-danger-bg: #fbf0ef;
   --color-danger-border: #f5c7c4;
 
-  --color-info: #1b5e7d;
+  --color-info: #3975a5;
   --color-info-bg: #ebf5fa;
   --color-info-border: #c2e2f2;
 
