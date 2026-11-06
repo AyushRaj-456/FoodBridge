@@ -66,10 +66,10 @@ export default function AboutPage({ onEnterApp, onNavigatePublic }) {
               className="text-muted"
               style={{ fontSize: 'var(--font-size-body)', lineHeight: 1.6 }}
             >
-              In October 2026, we launched a 14-day zero-cost pilot with Campus Mess 3 and City Care
-              Welfare NGO. Operating under strict written standard operating procedures
-              (`FB-SOP-PILOT-HUMAN-2026`), the pilot successfully recovered 315 kg of untouched
-              cooked meals (787 meal equivalents) with zero safety or hygiene incidents.
+              In October 2026, we launched a 14-day community pilot with Campus Mess 3 and City Care
+              Welfare NGO. Operating under verified food safety standards, the pilot successfully
+              recovered 315 kg of untouched cooked meals (787 meal equivalents) with zero safety or
+              hygiene incidents.
             </p>
           </div>
           <div>
@@ -147,16 +147,16 @@ export default function AboutPage({ onEnterApp, onNavigatePublic }) {
           <ShieldCheck size={28} color="var(--color-primary)" style={{ flexShrink: 0 }} />
           <div>
             <h3 style={{ fontSize: 'var(--font-size-card-heading)', margin: '0 0 var(--space-1)' }}>
-              Our Uncompromising Zero-Cost Architecture Guarantee
+              Our Community Sustainability Commitment
             </h3>
             <p
               className="text-muted"
               style={{ fontSize: 'var(--font-size-body)', lineHeight: 1.6, margin: 0 }}
             >
-              FoodBridge runs 100% on the Google Firebase Spark Tier with no credit card or billing
-              account linked. We do not use paid Cloud Functions, paid maps, paid SMS gateways, or
-              paid commercial AI APIs. This guarantees FoodBridge will remain genuinely free for
-              public institutions, community groups, and universities forever.
+              FoodBridge operates as an independent civic initiative with no commercial
+              subscriptions, paywalls, or advertising. All core redistribution tools remain
+              permanently accessible for public institutions, student messes, community kitchens,
+              and verified shelters.
             </p>
           </div>
         </div>

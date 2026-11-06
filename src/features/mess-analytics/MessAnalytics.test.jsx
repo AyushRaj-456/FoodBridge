@@ -337,8 +337,8 @@ describe('Mess Records & Descriptive Analytics — Prompt 14 (₹0 Baseline)', (
       render(<MessShell activeTab="meal-entry" />);
 
       expect(screen.getByText(/Mess Waste & Production Records/i)).toBeInTheDocument();
-      expect(screen.getByText(/Data Quality Rules:/i)).toBeInTheDocument();
-      expect(screen.getByText(/Missing data is recorded as/i)).toBeInTheDocument();
+      expect(screen.getByText(/Data Quality Guidelines:/i)).toBeInTheDocument();
+      expect(screen.getByText(/Unrecorded fields are left blank/i)).toBeInTheDocument();
       expect(screen.getByText(/Total Prepared \(kg\)/i)).toBeInTheDocument();
       expect(screen.getByText(/Per-Diner Consumption/i)).toBeInTheDocument();
     });
@@ -362,7 +362,7 @@ describe('Mess Records & Descriptive Analytics — Prompt 14 (₹0 Baseline)', (
       fireEvent.click(submitBtn);
 
       await waitFor(() => {
-        expect(screen.getByText(/Missing fields stored as null \(not zero\)/i)).toBeInTheDocument();
+        expect(screen.getByText(/Unrecorded fields left blank/i)).toBeInTheDocument();
       });
     });
 

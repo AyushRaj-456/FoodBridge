@@ -1,13 +1,5 @@
 import { useState } from 'react';
-import {
-  ShieldAlert,
-  Lock,
-  FileText,
-  AlertTriangle,
-  Activity,
-  CheckCircle2,
-  Trash2,
-} from 'lucide-react';
+import { Lock, FileText, AlertTriangle, Activity, CheckCircle2, Trash2 } from 'lucide-react';
 import { useAuth } from '../auth/useAuth.js';
 import VerificationQueue from './VerificationQueue.jsx';
 import StatusBadge from '../../components/common/StatusBadge.jsx';
@@ -92,14 +84,19 @@ export default function AdminShell({ activeTab }) {
           <div>
             <h1>Administrative &amp; Moderation Console</h1>
             <p className="text-muted">
-              Privileged Controls &amp; Verification Operations (Firebase Spark ₹0 Compliance)
+              Platform governance, organization verifications, and compliance oversight.
             </p>
           </div>
         </div>
 
         <div
           className="card"
-          style={{ maxWidth: '640px', margin: 'var(--space-6) auto', textAlign: 'center' }}
+          style={{
+            maxWidth: '640px',
+            margin: 'var(--space-6) auto',
+            textAlign: 'center',
+            padding: 'var(--space-8)',
+          }}
         >
           <div
             style={{
@@ -113,66 +110,28 @@ export default function AdminShell({ activeTab }) {
           >
             <Lock size={36} />
           </div>
-          <h2>Console Admin Provisioning Required</h2>
-          <p className="text-muted" style={{ marginTop: 'var(--space-2)' }}>
-            Under FoodBridge&apos;s deny-by-default security model, administrator privileges are
-            strictly provisioned manually in the Firebase Console under the <code>admins</code>{' '}
-            collection (<code>admins/&#123;uid&#125;</code>).
+          <h2>Administrator Access Required</h2>
+          <p className="text-muted" style={{ marginTop: 'var(--space-2)', lineHeight: 1.6 }}>
+            This console is restricted to authorized platform administrators and verification
+            officers. Please sign in with an authorized administrator account to access verification
+            queues and moderation tools.
           </p>
 
           <div
             className="notice-box"
             style={{
               marginTop: 'var(--space-4)',
-              textAlign: 'left',
+              textAlign: 'center',
               background: 'var(--color-canvas)',
               border: '1px solid var(--color-border)',
               padding: 'var(--space-3)',
               borderRadius: 'var(--radius-md)',
               fontSize: 'var(--font-size-label)',
+              color: 'var(--color-muted)',
             }}
           >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--space-2)',
-                fontWeight: 600,
-              }}
-            >
-              <ShieldAlert size={18} color="var(--color-brand-600)" />
-              <span>How Admin Accounts are Provisioned:</span>
-            </div>
-            <ol
-              style={{
-                marginTop: 'var(--space-2)',
-                paddingLeft: 'var(--space-4)',
-                lineHeight: '1.6',
-              }}
-            >
-              <li>Open the Firebase Console &rarr; Cloud Firestore.</li>
-              <li>
-                Navigate to or create the top-level collection <code>admins</code>.
-              </li>
-              <li>
-                Create a document with ID equal to your user UID (
-                <code>{user?.uid || 'Sign in to see your UID'}</code>).
-              </li>
-              <li>
-                Add field <code>isAdmin: true</code>.
-              </li>
-              <li>Reload the FoodBridge application to access this console.</li>
-            </ol>
-            <p
-              style={{
-                marginTop: 'var(--space-2)',
-                color: 'var(--color-muted)',
-                fontSize: 'var(--font-size-caption)',
-              }}
-            >
-              Note: Client write operations to <code>admins</code> are permanently denied by
-              Firestore security rules (<code>allow write: if false;</code>).
-            </p>
+            Current User: <strong>{user?.email || 'Unauthenticated Guest'}</strong> &bull; Need
+            access? Contact platform coordinators.
           </div>
         </div>
       </div>
@@ -222,7 +181,7 @@ export default function AdminShell({ activeTab }) {
         <div>
           <h1>Administrative &amp; Moderation Console</h1>
           <p className="text-muted">
-            Privileged Controls &amp; Verification Operations (Firebase Spark ₹0 Compliance)
+            Platform governance, organization verifications, and compliance oversight.
           </p>
         </div>
       </div>
@@ -404,10 +363,10 @@ export default function AdminShell({ activeTab }) {
           <div className="card">
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
               <Activity size={22} color="var(--color-brand-700)" />
-              <h2>System Audit &amp; Firebase Spark ₹0 Quota Checklist</h2>
+              <h2>System Health &amp; Security Audit Log</h2>
             </div>
             <p className="text-muted" style={{ marginTop: 'var(--space-1)' }}>
-              Real-time headroom monitoring against published Google Cloud Firebase Spark quotas.
+              Operational health monitoring and immutable security event ledger.
             </p>
 
             <div
@@ -420,24 +379,24 @@ export default function AdminShell({ activeTab }) {
               }}
             >
               <div className="quota-card">
-                <div className="quota-card-label">Firestore Reads (50k limit)</div>
-                <div className="quota-card-value">1,410 / 50,000</div>
-                <div className="quota-card-note">97.1% headroom remaining</div>
+                <div className="quota-card-label">Database Sync Operations</div>
+                <div className="quota-card-value">Healthy (Active)</div>
+                <div className="quota-card-note">Client query limits enforced</div>
               </div>
               <div className="quota-card">
-                <div className="quota-card-label">Firestore Writes (20k limit)</div>
-                <div className="quota-card-value">460 / 20,000</div>
-                <div className="quota-card-note">97.7% headroom remaining</div>
+                <div className="quota-card-label">Security Rules Enforcement</div>
+                <div className="quota-card-value">100% Enforced</div>
+                <div className="quota-card-note">Deny-by-default active</div>
               </div>
               <div className="quota-card">
-                <div className="quota-card-label">Hosting Bandwidth (10 GB)</div>
-                <div className="quota-card-value">165 MB / 10 GB</div>
-                <div className="quota-card-note">98.3% headroom remaining</div>
+                <div className="quota-card-label">CDN &amp; Application Delivery</div>
+                <div className="quota-card-value">Operational</div>
+                <div className="quota-card-note">Fast edge delivery</div>
               </div>
               <div className="quota-card">
                 <div className="quota-card-label">Document &amp; Photo Storage</div>
-                <div className="quota-card-value">0 bytes (₹0 Invariant)</div>
-                <div className="quota-card-note">Zero cloud file storage</div>
+                <div className="quota-card-value">Local Verified Snapshots</div>
+                <div className="quota-card-note">Canvas watermarked</div>
               </div>
             </div>
 

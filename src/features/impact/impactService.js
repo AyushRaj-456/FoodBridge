@@ -102,6 +102,15 @@ export const VERIFIED_SEED_IMPACT_DATA = {
       routeTier: 'human',
       createdAt: '2026-11-04T09:00:00Z',
     },
+    {
+      id: 'lst-v6',
+      title: 'Packed Chapati & Sabzi Trays',
+      quantity: 60,
+      unit: 'portions',
+      status: 'published',
+      routeTier: 'human',
+      createdAt: '2026-11-04T12:00:00Z',
+    },
   ],
   claims: [
     {
@@ -354,7 +363,7 @@ export function computeImpactMetrics({
     },
     derivedEstimates,
     disclaimer:
-      'Zero-Cost Transparency Policy: FoodBridge reports strictly verified physical quantities segregated by unit. Derived impact factors are computed using accredited public benchmarks (UNEP 2024, FSSAI 2019) with fully disclosed formulas. No factors are fabricated.',
+      'Community Transparency Policy: FoodBridge reports strictly verified physical quantities segregated by unit. Derived impact factors are computed using accredited public benchmarks (UNEP 2024, FSSAI 2019) with fully disclosed formulas. No factors are fabricated.',
   };
 }
 

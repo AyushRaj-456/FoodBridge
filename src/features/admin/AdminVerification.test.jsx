@@ -40,13 +40,10 @@ describe('Admin Verification & Moderation — Spark ₹0 Baseline', () => {
 
       render(<AdminShell activeTab="verification-queue" />);
 
-      expect(screen.getByText(/Console Admin Provisioning Required/i)).toBeDefined();
+      expect(screen.getByText(/Administrator Access Required/i)).toBeDefined();
       expect(
-        screen.getByText(
-          /administrator privileges are strictly provisioned manually in the Firebase Console/i
-        )
+        screen.getByText(/This console is restricted to authorized platform administrators/i)
       ).toBeDefined();
-      expect(screen.getByText(/admins\/\{uid\}/i)).toBeDefined();
     });
 
     it('grants access when user has isAdmin: true', () => {
@@ -58,7 +55,7 @@ describe('Admin Verification & Moderation — Spark ₹0 Baseline', () => {
       render(<AdminShell activeTab="verification-queue" />);
 
       expect(screen.getByText(/Administrative & Moderation Console/i)).toBeDefined();
-      expect(screen.getByText(/Offline Organisation Verification Queue/i)).toBeDefined();
+      expect(screen.getByText(/Organisation Verification Requests/i)).toBeDefined();
     });
   });
 
@@ -80,7 +77,7 @@ describe('Admin Verification & Moderation — Spark ₹0 Baseline', () => {
       expect(screen.getByText(/2\. Primary Coordinator Authenticated/i)).toBeDefined();
       expect(screen.getByText(/3\. Safe Food Handling & Storage Capacity/i)).toBeDefined();
       expect(screen.getByText(/4\. Route Tier Suitability Confirmed/i)).toBeDefined();
-      expect(screen.getByText(/5\. Strict Zero-Cost ₹0 Architecture Invariant/i)).toBeDefined();
+      expect(screen.getByText(/5\. Official Registry Verification Completed/i)).toBeDefined();
     });
 
     it('requires minimum 10-character inspection reason before enabling submission', () => {
@@ -202,12 +199,12 @@ describe('Admin Verification & Moderation — Spark ₹0 Baseline', () => {
       });
     });
 
-    it('displays the Spark ₹0 quota safety budget card', async () => {
+    it('displays the organisation verification standards card', async () => {
       render(<VerificationQueue />);
 
-      expect(screen.getByText(/Daily Spark ₹0 Quota Safety Budget/i)).toBeDefined();
-      expect(screen.getByText(/Firestore Reads \(Spark Limit 50k\/day\)/i)).toBeDefined();
-      expect(screen.getByText(/Document Scans & Uploads/i)).toBeDefined();
+      expect(screen.getByText(/Organisation Verification Standards/i)).toBeDefined();
+      expect(screen.getByText(/Statutory Trust Verification/i)).toBeDefined();
+      expect(screen.getByText(/Food Safety Accreditation/i)).toBeDefined();
     });
   });
 });

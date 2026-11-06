@@ -4,7 +4,6 @@ import {
   CheckCircle,
   AlertTriangle,
   Lock,
-  Building,
   ShieldAlert,
   ShieldCheck,
   Clock,
@@ -100,6 +99,20 @@ const SAMPLE_RECIPIENT_HISTORY = [
   },
 ];
 
+function format12HourTime(timeStr) {
+  if (!timeStr) return '';
+  if (timeStr.toLowerCase().includes('am') || timeStr.toLowerCase().includes('pm')) return timeStr;
+  const parts = timeStr.split(':');
+  if (parts.length < 2) return timeStr;
+  let hours = parseInt(parts[0], 10);
+  const minutes = parts[1].slice(0, 2);
+  if (isNaN(hours)) return timeStr;
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  return `${hours}:${minutes} ${ampm}`;
+}
+
 export default function FeedShell({
   activeTab,
   initialOrgStatus = 'pending',
@@ -107,7 +120,7 @@ export default function FeedShell({
   onOpenDemandRequest,
   onOpenDistributionProof,
 }) {
-  const [recipientOrgStatus, setRecipientOrgStatus] = useState(initialOrgStatus);
+  const recipientOrgStatus = initialOrgStatus;
   const [dietFilter, setDietFilter] = useState('all');
   const [claims, setClaims] = useState(SAMPLE_ACTIVE_CLAIMS);
   const [claimSuccessMessage, setClaimSuccessMessage] = useState(null);
@@ -126,10 +139,6 @@ export default function FeedShell({
   });
 
   const [selectedRadius, setSelectedRadius] = useState(5);
-  const [recipientCapacity] = useState({
-    maxPortionsPerClaim: 80,
-    dailyCapacityMeals: 200,
-  });
 
   const isEligibleToClaim = canRecipientClaim(recipientOrgStatus);
 
@@ -246,7 +255,7 @@ export default function FeedShell({
             }}
           >
             <div>
-              <h2>Surplus Opportunities (Haversine Straight-Line Match)</h2>
+              <h2>Available Food Nearby</h2>
               <p className="text-muted" style={{ marginTop: 'var(--space-1)' }}>
                 Active View: <strong>Available Feed</strong>. Exact pickup coordinates unlock upon
                 successful claim.
@@ -280,37 +289,15 @@ export default function FeedShell({
                   </option>
                 ))}
               </select>
-
-              {/* Status Simulation Tool for Dev / Testing */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-                <Building size={14} className="text-muted" />
-                <select
-                  aria-label="Simulate Organisation Status"
-                  value={recipientOrgStatus}
-                  onChange={(e) => setRecipientOrgStatus(e.target.value)}
-                  className="input-field"
-                  style={{
-                    width: 'auto',
-                    padding: '2px 8px',
-                    fontSize: 'var(--font-size-caption)',
-                    minHeight: '32px',
-                  }}
-                >
-                  <option value="pending">Pending (Unverified)</option>
-                  <option value="approved">Approved (Verified)</option>
-                  <option value="suspended">Suspended</option>
-                </select>
-              </div>
             </div>
           </div>
 
-          {/* Radius Expansion Policy & Safety Invariant Banner */}
+          {/* Discovery Info Banner */}
           <div
-            className="notice-box"
             style={{
               marginTop: 'var(--space-3)',
               padding: 'var(--space-2) var(--space-3)',
-              background: 'var(--color-canvas)',
+              background: 'var(--color-surface)',
               border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-sm)',
               fontSize: 'var(--font-size-caption)',
@@ -319,12 +306,10 @@ export default function FeedShell({
               gap: 'var(--space-2)',
             }}
           >
-            <ShieldCheck size={16} color="var(--color-brand-700)" style={{ flexShrink: 0 }} />
+            <ShieldCheck size={16} color="var(--color-primary)" style={{ flexShrink: 0 }} />
             <span>
-              <strong>Radius Expansion Safety Policy:</strong> Expanding discovery radius (
-              {selectedRadius} km) broadens geographic reach but never relaxes recipient approval,
-              capacity constraints (~{recipientCapacity.maxPortionsPerClaim} portions), or
-              food-safety deadlines.
+              Showing verified surplus meals within {selectedRadius} km of your shelter. Claimed
+              batches provide immediate loading dock directions.
             </span>
           </div>
 
@@ -433,21 +418,22 @@ export default function FeedShell({
                   <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                     <Clock size={13} />
                     <span>
-                      Consume before: <strong>{opp.consumeBy}</strong>
+                      Safe to serve until: <strong>{format12HourTime(opp.consumeBy)}</strong>
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                     <Truck size={13} />
                     <span>
-                      Pickup Window:{' '}
+                      Pickup window:{' '}
                       <strong>
-                        {opp.pickupStart} &ndash; {opp.pickupEnd}
+                        {format12HourTime(opp.pickupStart)} &ndash;{' '}
+                        {format12HourTime(opp.pickupEnd)}
                       </strong>
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                     <MapPin size={13} />
-                    <span>Coarse: {opp.coarseLocation} (Exact address unlocked upon claim)</span>
+                    <span>Location: {opp.coarseLocation} (Exact address unlocked upon claim)</span>
                   </div>
                 </div>
               </div>

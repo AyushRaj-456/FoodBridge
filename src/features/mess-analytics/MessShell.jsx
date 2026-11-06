@@ -290,7 +290,7 @@ export default function MessShell({ activeTab }) {
 
       setRecords((prev) => [newRecord, ...prev]);
       setFormSuccess(
-        `Meal record for "${newRecord.dishName}" successfully logged. Missing fields stored as null (not zero).`
+        `Meal record for "${newRecord.dishName}" successfully logged. Unrecorded fields left blank.`
       );
 
       // Reset form
@@ -427,9 +427,8 @@ export default function MessShell({ activeTab }) {
       >
         <Info size={15} style={{ color: 'var(--color-brand-700)', flexShrink: 0 }} />
         <span>
-          <strong>Data Quality Rules:</strong> Missing data is recorded as <code>null</code>, never{' '}
-          <code>0</code>. Measured, derived, and estimated quantities are strictly separated. Units
-          are never mixed.
+          <strong>Data Quality Guidelines:</strong> Unrecorded fields are left blank and excluded
+          from averages. Measured, derived, and estimated quantities are recorded transparently.
         </span>
       </div>
 
@@ -500,7 +499,7 @@ export default function MessShell({ activeTab }) {
               : 'N/A'}
           </div>
           <span style={{ fontSize: 'var(--font-size-caption)', color: 'var(--color-muted)' }}>
-            Sample size: n = {perCapitaKg.validSampleCount} complete records
+            Based on {perCapitaKg.validSampleCount} recorded meals
           </span>
         </div>
       </div>
@@ -513,7 +512,7 @@ export default function MessShell({ activeTab }) {
             <h2>Log Daily Meal Service Record</h2>
           </div>
           <p className="text-muted" style={{ marginTop: 'var(--space-1)' }}>
-            Enter measured quantities. Missing data is stored as null, not zero.
+            Enter kitchen quantities. Leave unrecorded fields blank.
           </p>
 
           {formSuccess && (
@@ -1316,11 +1315,11 @@ export default function MessShell({ activeTab }) {
                     <span
                       style={{ fontSize: 'var(--font-size-caption)', color: 'var(--color-muted)' }}
                     >
-                      Pure JavaScript Moving Average (Zero ML Cost)
+                      Rolling 14-Day Average
                     </span>
                   </div>
                   <div style={{ fontSize: 'var(--font-size-label)', marginTop: '4px' }}>
-                    <strong>Sample Size:</strong> n = {forecastData.eligibility.totalRecords} meals
+                    <strong>Recorded History:</strong> {forecastData.eligibility.totalRecords} meals
                     across {forecastData.eligibility.distinctDaysCount} service days &bull;{' '}
                     <strong>Window:</strong> {forecastData.eligibility.dateStart} to{' '}
                     {forecastData.eligibility.dateEnd}

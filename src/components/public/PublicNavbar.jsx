@@ -22,12 +22,12 @@ export default function PublicNavbar({
 
   const navLinks = [
     { id: 'landing', label: 'Home' },
-    { id: 'about', label: 'About' },
     { id: 'how-it-works', label: 'How It Works' },
     { id: 'impact', label: 'Impact' },
-    { id: 'for-donors', label: 'For Donors' },
-    { id: 'for-ngos', label: 'For NGOs' },
-    { id: 'for-farms', label: 'Farms & Compost' },
+    { id: 'for-donors', label: 'Donors' },
+    { id: 'for-ngos', label: 'NGOs' },
+    { id: 'for-farms', label: 'Farms' },
+    { id: 'about', label: 'About' },
     { id: 'contact', label: 'Contact' },
   ];
 
@@ -86,6 +86,7 @@ export default function PublicNavbar({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              flexShrink: 0,
             }}
           >
             <UtensilsCrossed size={20} />
@@ -110,6 +111,7 @@ export default function PublicNavbar({
                 letterSpacing: '0.02em',
                 textTransform: 'uppercase',
                 fontWeight: 'var(--font-weight-medium)',
+                whiteSpace: 'nowrap',
               }}
             >
               Rescue Food &bull; Restore Balance

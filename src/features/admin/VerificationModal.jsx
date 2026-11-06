@@ -34,9 +34,7 @@ export default function VerificationModal({ org, isOpen, onClose, onSuccess }) {
     setError(null);
 
     if (!isAdmin) {
-      setError(
-        'Action Denied: You must have an administrator account provisioned via the Firebase Console.'
-      );
+      setError('Action Denied: You must have an authorized administrator account.');
       return;
     }
 
@@ -276,12 +274,10 @@ export default function VerificationModal({ org, isOpen, onClose, onSuccess }) {
                   onChange={() => handleChecklistToggle('offlineInspectionVerified')}
                 />
                 <div>
-                  <div className="checklist-label">
-                    5. Strict Zero-Cost ₹0 Architecture Invariant
-                  </div>
+                  <div className="checklist-label">5. Official Registry Verification Completed</div>
                   <div className="checklist-desc">
-                    Confirmation that no digital document scans or photos are stored in Firestore
-                    under Spark plan.
+                    Confirmation that registration details were verified directly with official
+                    government portals.
                   </div>
                 </div>
               </label>

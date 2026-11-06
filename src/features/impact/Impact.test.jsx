@@ -193,10 +193,8 @@ describe('Impact Dashboard & Verified Factors — Prompt 16 (₹0 Baseline)', ()
     it('renders the 5 distinct physical quantity cards and transparency policy banner', () => {
       render(<ImpactDashboard />);
 
-      expect(screen.getByText(/Community Impact & Verification Dashboard/i)).toBeInTheDocument();
-      expect(
-        screen.getByText(/Zero-Cost Data Integrity Policy \(Prompt 16\):/i)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/Community Impact Dashboard/i)).toBeInTheDocument();
+      expect(screen.getByText(/Community Impact Measurement Policy:/i)).toBeInTheDocument();
       expect(screen.getByText(/Physical Quantities Tracked Separately/i)).toBeInTheDocument();
 
       // Check all 5 separate categories

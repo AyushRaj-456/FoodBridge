@@ -53,7 +53,7 @@ export default function LandingPage({ onNavigatePublic, onEnterApp }) {
               }}
             >
               <Leaf size={15} />
-              <span>Civic Surplus Redistribution Platform &bull; ₹0 Budget</span>
+              <span>Community Food Rescue Network &bull; Verified Safe</span>
             </div>
 
             <h1
@@ -140,7 +140,7 @@ export default function LandingPage({ onNavigatePublic, onEnterApp }) {
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                 <CheckCircle2 size={16} color="var(--color-primary)" />
-                Zero-Cost Cloud Guarantee
+                Direct Community Handover
               </span>
             </div>
           </div>
@@ -467,13 +467,13 @@ export default function LandingPage({ onNavigatePublic, onEnterApp }) {
                   marginBottom: '4px',
                 }}
               >
-                Platform Operational Cost
+                Community Accessibility
               </div>
               <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--color-primary)' }}>
-                &#8377;0.00
+                100% Free
               </div>
               <div style={{ fontSize: '12px', color: 'var(--color-muted)', marginTop: '4px' }}>
-                Firebase Spark Tier Free
+                Open for verified welfare partners
               </div>
             </div>
           </div>

@@ -6,14 +6,13 @@ export default function StatusBanner({ role }) {
     <aside className="status-banner" aria-label="System Operational Status">
       <div className="status-banner-inner">
         <div className="status-banner-badge">
-          <ShieldCheck size={16} aria-hidden="true" />
-          <span>Firebase Spark (₹0 Plan)</span>
+          <ShieldCheck size={14} aria-hidden="true" />
+          <span>Verified Safe Handover</span>
         </div>
         <div className="status-banner-content">
           <Info size={14} aria-hidden="true" />
           <span>
-            Strict zero-cost contract active. No billing account linked. In-app sync only. Quotas:
-            50,000 reads/day.
+            Direct community redistribution &bull; Food safety verified &bull; Fresh meal tracking
           </span>
         </div>
         <div className="status-banner-role">
@@ -41,7 +40,7 @@ function formatRoleName(role) {
     case 'routing':
       return 'Three-Tier Routing Monitor';
     case 'helper':
-      return 'Delivery Helper (Future Scope)';
+      return 'Delivery Helper';
     case 'public':
       return 'Public Community Member';
     default:

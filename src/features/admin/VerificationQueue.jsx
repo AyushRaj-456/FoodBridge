@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import {
   ShieldAlert,
+  ShieldCheck,
   UserCheck,
   Building,
   RefreshCw,
   Search,
-  Activity,
   CheckCircle2,
   XCircle,
   Clock,
@@ -161,9 +161,10 @@ export default function VerificationQueue() {
     <div className="verification-queue-container">
       <div className="admin-console-header">
         <div>
-          <h2>Offline Organisation Verification Queue</h2>
+          <h2>Organisation Verification Requests</h2>
           <p className="text-muted" style={{ marginTop: 'var(--space-1)' }}>
-            Inspect official registrations offline. Unapproved recipient organisations cannot claim.
+            Review official registrations and credentials. Unapproved recipient organisations cannot
+            claim.
           </p>
         </div>
         <button
@@ -410,7 +411,7 @@ export default function VerificationQueue() {
         )}
       </div>
 
-      {/* Firebase Spark Free Quota Awareness Box */}
+      {/* Verification Standards & Guidelines Card */}
       <div
         className="card"
         style={{
@@ -420,32 +421,32 @@ export default function VerificationQueue() {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          <Activity size={18} color="var(--color-brand-700)" />
-          <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Daily Spark ₹0 Quota Safety Budget</h3>
+          <ShieldCheck size={18} color="var(--color-primary)" />
+          <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Organisation Verification Standards</h3>
         </div>
         <p
           className="text-muted"
           style={{ fontSize: 'var(--font-size-caption)', marginTop: 'var(--space-1)' }}
         >
-          Admin operations use client SDK directly without paid functions or servers. Quotas reset
-          daily at midnight Pacific Time.
+          All welfare shelters, gaushalas, and biogas facilities must possess valid statutory
+          registrations prior to approval.
         </p>
 
         <div className="quota-indicator-grid">
           <div className="quota-card">
-            <div className="quota-card-label">Firestore Reads (Spark Limit 50k/day)</div>
-            <div className="quota-card-value">1,380 / 50,000</div>
-            <div className="quota-card-note">97.2% headroom remaining</div>
+            <div className="quota-card-label">Statutory Trust Verification</div>
+            <div className="quota-card-value">12A / 80G / CSR</div>
+            <div className="quota-card-note">Verified against official registry</div>
           </div>
           <div className="quota-card">
-            <div className="quota-card-label">Firestore Writes (Spark Limit 20k/day)</div>
-            <div className="quota-card-value">445 / 20,000</div>
-            <div className="quota-card-note">97.8% headroom remaining</div>
+            <div className="quota-card-label">Food Safety Accreditation</div>
+            <div className="quota-card-value">FSSAI License</div>
+            <div className="quota-card-note">Required for cooked food distribution</div>
           </div>
           <div className="quota-card">
-            <div className="quota-card-label">Document Scans & Uploads</div>
-            <div className="quota-card-value">0 bytes / 0 docs</div>
-            <div className="quota-card-note">Offline verification model (₹0 invariant)</div>
+            <div className="quota-card-label">Document Verification Model</div>
+            <div className="quota-card-value">Direct Official Check</div>
+            <div className="quota-card-note">Verified with issuing authorities</div>
           </div>
         </div>
       </div>

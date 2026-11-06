@@ -76,7 +76,7 @@ export default function Header({
               className="icon-btn"
               onClick={onOpenNotifications}
               aria-label={`In-App Notifications (${unreadNotifications} unread)`}
-              title="In-App Notifications Only (Spark Plan)"
+              title="Notifications"
             >
               <Bell size={18} />
               {unreadNotifications > 0 && <span className="notification-indicator" />}

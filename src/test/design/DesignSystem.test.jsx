@@ -124,7 +124,7 @@ describe('Design System & Page Inventory — Calm Civic Utility', () => {
       const { container } = render(<ListingShell activeTab="create-listing" />);
 
       expect(screen.getByText(/Declare Food Surplus \(New Listing\)/i)).toBeDefined();
-      expect(screen.getByText(/Strict Zero-Cost Architecture \(No Photo Uploads\)/i)).toBeDefined();
+      expect(screen.getByText(/Food Safety & Freshness Declaration/i)).toBeDefined();
 
       const form = container.querySelector('form');
       const titleInput = screen.getByLabelText(/Surplus Food Description/i);
@@ -152,9 +152,7 @@ describe('Design System & Page Inventory — Calm Civic Utility', () => {
     it('renders surplus opportunities and dietary preference filters', () => {
       render(<FeedShell activeTab="available-feed" initialOrgStatus="approved" />);
 
-      expect(
-        screen.getByText(/Surplus Opportunities \(Haversine Straight-Line Match\)/i)
-      ).toBeDefined();
+      expect(screen.getByText(/Available Food Nearby/i)).toBeDefined();
       expect(screen.getByText(/Prepared Meals: Steamed Rice & Dal Tadka/i)).toBeDefined();
       expect(screen.getByText(/Approx\. 1\.2 km away/i)).toBeDefined();
     });
@@ -249,12 +247,12 @@ describe('Design System & Page Inventory — Calm Civic Utility', () => {
       expect(screen.getAllByText('Resolved')[0]).toBeDefined();
     });
 
-    it('displays the Spark ₹0 quota checklist and append-only audit events', () => {
+    it('displays the system health audit and append-only audit events', () => {
       render(<AdminShell activeTab="system-audit" />);
 
-      expect(screen.getByText(/System Audit & Firebase Spark ₹0 Quota Checklist/i)).toBeDefined();
-      expect(screen.getByText(/Firestore Reads \(50k limit\)/i)).toBeDefined();
-      expect(screen.getByText(/0 bytes \(₹0 Invariant\)/i)).toBeDefined();
+      expect(screen.getByText(/System Health & Security Audit Log/i)).toBeDefined();
+      expect(screen.getByText(/Database Sync Operations/i)).toBeDefined();
+      expect(screen.getByText(/Local Verified Snapshots/i)).toBeDefined();
       expect(screen.getByText(/Append-Only Security Audit Log/i)).toBeDefined();
     });
   });

@@ -36,7 +36,7 @@ describe('WCAG 2.1 AA Accessibility & Assistive Tech Audit — Prompt 18', () =>
       const aside = screen.getByRole('complementary');
       expect(aside).toBeDefined();
       expect(aside.getAttribute('aria-label')).toBe('System Operational Status');
-      expect(screen.getByText('Firebase Spark (₹0 Plan)')).toBeDefined();
+      expect(screen.getByText('Verified Safe Handover')).toBeDefined();
       expect(screen.getByText('Donor Member')).toBeDefined();
     });
 
@@ -111,9 +111,7 @@ describe('WCAG 2.1 AA Accessibility & Assistive Tech Audit — Prompt 18', () =>
       expect(screen.getByLabelText(/2\. Primary Coordinator Authenticated/i)).toBeDefined();
       expect(screen.getByLabelText(/3\. Safe Food Handling & Storage Capacity/i)).toBeDefined();
       expect(screen.getByLabelText(/4\. Route Tier Suitability Confirmed/i)).toBeDefined();
-      expect(
-        screen.getByLabelText(/5\. Strict Zero-Cost ₹0 Architecture Invariant/i)
-      ).toBeDefined();
+      expect(screen.getByLabelText(/5\. Official Registry Verification Completed/i)).toBeDefined();
 
       // Inspection notes textarea has accessible label
       expect(screen.getByLabelText(/Audit Inspection Reason & Notes/i)).toBeDefined();

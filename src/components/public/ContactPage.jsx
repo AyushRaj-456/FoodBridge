@@ -44,8 +44,8 @@ export default function ContactPage() {
           Contact the FoodBridge Pilot Cell
         </h1>
         <p className="text-muted" style={{ fontSize: '1.125rem', lineHeight: 1.6 }}>
-          Interested in replicating the zero-cost FoodBridge deployment at your university campus,
-          hostel dining cluster, or municipality? Reach out to our civic engineering team.
+          Interested in bringing the FoodBridge community network to your university campus, hostel
+          dining cluster, or municipality? Reach out to our community support team.
         </p>
       </div>
 
@@ -235,8 +235,8 @@ export default function ContactPage() {
               style={{ fontSize: 'var(--font-size-label)', lineHeight: 1.5, margin: 0 }}
             >
               FoodBridge code, security rules, and food-safety SOPs are released as open public
-              civic assets. Any institution can fork and run on Firebase Spark with zero monthly
-              licensing fees.
+              civic assets. Any institution or community network can adopt FoodBridge with zero
+              monthly licensing fees.
             </p>
           </div>
         </div>

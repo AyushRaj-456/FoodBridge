@@ -127,6 +127,20 @@ const INITIAL_SAMPLE_HISTORY = [
   },
 ];
 
+function format12HourTime(timeStr) {
+  if (!timeStr) return '';
+  if (timeStr.toLowerCase().includes('am') || timeStr.toLowerCase().includes('pm')) return timeStr;
+  const parts = timeStr.split(':');
+  if (parts.length < 2) return timeStr;
+  let hours = parseInt(parts[0], 10);
+  const minutes = parts[1].slice(0, 2);
+  if (isNaN(hours)) return timeStr;
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  return `${hours}:${minutes} ${ampm}`;
+}
+
 export default function ListingShell({ activeTab = 'active-listings', onSelectTab }) {
   const auth = useContext(AuthContext);
   const user = auth?.user || null;
@@ -401,8 +415,8 @@ export default function ListingShell({ activeTab = 'active-listings', onSelectTa
             <div>
               <h2>Active Surplus Listings</h2>
               <p className="text-muted" style={{ marginTop: 'var(--space-1)' }}>
-                Direct collection declarations. Expiry evaluated at runtime without background
-                workers.
+                Active declarations ready for verified collection. Listings close automatically when
+                pickup windows end.
               </p>
             </div>
             <div>
@@ -508,7 +522,7 @@ export default function ListingShell({ activeTab = 'active-listings', onSelectTa
                       {listing.status === 'published' && (
                         <button
                           type="button"
-                          className="btn btn-secondary"
+                          className="btn-quiet"
                           style={{
                             minHeight: '32px',
                             padding: 'var(--space-1) var(--space-2)',
@@ -517,7 +531,7 @@ export default function ListingShell({ activeTab = 'active-listings', onSelectTa
                           }}
                           onClick={() => handleWithdrawListing(listing)}
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={13} />
                           <span>Withdraw</span>
                         </button>
                       )}
@@ -554,15 +568,16 @@ export default function ListingShell({ activeTab = 'active-listings', onSelectTa
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                       <Clock size={13} />
                       <span>
-                        Consume by: <strong>{listing.consumeBy}</strong>
+                        Safe to serve until: <strong>{format12HourTime(listing.consumeBy)}</strong>
                       </span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                       <Truck size={13} />
                       <span>
-                        Pickup:{' '}
+                        Pickup window:{' '}
                         <strong>
-                          {listing.pickupStart} &ndash; {listing.pickupEnd}
+                          {format12HourTime(listing.pickupStart)} &ndash;{' '}
+                          {format12HourTime(listing.pickupEnd)}
                         </strong>
                       </span>
                     </div>
@@ -594,7 +609,7 @@ export default function ListingShell({ activeTab = 'active-listings', onSelectTa
             allergens.
           </p>
 
-          {/* Zero-Cost ₹0 Spark Photo Upload Omission Banner */}
+          {/* Food Safety & In-App Verification Banner */}
           <div
             className="notice-box"
             style={{
@@ -610,9 +625,9 @@ export default function ListingShell({ activeTab = 'active-listings', onSelectTa
           >
             <Info size={18} color="var(--color-brand-700)" style={{ flexShrink: 0 }} />
             <div>
-              <strong>Strict Zero-Cost Architecture (No Photo Uploads):</strong> FoodBridge operates
-              within the Firebase Spark free quota without paid file storage. Describe food items
-              accurately using explicit weights, times, and allergens.
+              <strong>Food Safety &amp; Freshness Declaration:</strong> Accurately specify
+              preparation time, storage temperatures, allergens, and safe consumption deadlines.
+              Take a quick in-app photo to verify fresh holding vessels.
             </div>
           </div>
 
@@ -1084,7 +1099,7 @@ export default function ListingShell({ activeTab = 'active-listings', onSelectTa
                     <td>
                       <strong>{row.title}</strong>
                     </td>
-                    <td>{row.date}</td>
+                    <td style={{ whiteSpace: 'nowrap' }}>{row.date}</td>
                     <td>
                       {row.quantity} (~{row.portions} portions)
                     </td>

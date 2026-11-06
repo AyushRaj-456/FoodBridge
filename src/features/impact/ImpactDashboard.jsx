@@ -84,10 +84,9 @@ export default function ImpactDashboard() {
       {/* Header */}
       <div className="feature-header">
         <div>
-          <h1>Community Impact &amp; Verification Dashboard</h1>
+          <h1>Community Impact Dashboard</h1>
           <p className="text-muted">
-            Auditable physical quantities and accredited environmental impact metrics (Calm Civic
-            Utility)
+            Audited physical quantities and environmental translations from verified meal records.
           </p>
         </div>
 
@@ -141,13 +140,12 @@ export default function ImpactDashboard() {
         />
         <div>
           <strong style={{ color: 'var(--color-text)' }}>
-            Zero-Cost Data Integrity Policy (Prompt 16):
+            Community Impact Measurement Policy:
           </strong>{' '}
-          FoodBridge tracks physical surplus quantities in <strong>five distinct categories</strong>{' '}
-          without conflation. We <strong>never invent conversion factors</strong>. All environmental
-          and nutritional translations use accredited public standards (UNEP 2024, FSSAI 2019, Water
-          Footprint Network) with fully disclosed formulas, valid periods, and mandatory{' '}
-          <strong>[ESTIMATE]</strong> labels.
+          Surplus quantities are tracked separately in <strong>five distinct categories</strong>{' '}
+          from initial kitchen declaration through final delivery. All environmental and nutritional
+          equivalents use accredited benchmarks (UNEP 2024, FSSAI 2019) with fully disclosed
+          formulas and clear <strong>[ESTIMATE]</strong> labels.
         </div>
       </div>
 

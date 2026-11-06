@@ -190,9 +190,7 @@ describe('Advisory Prediction & Moving Averages — Prompt 15 (₹0 Baseline)', 
 
       // Should now display active rolling model
       expect(screen.getByText(/Active 14-Day Rolling Model/i)).toBeInTheDocument();
-      expect(
-        screen.getByText(/Pure JavaScript Moving Average \(Zero ML Cost\)/i)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/Rolling 14-Day Average/i)).toBeInTheDocument();
       expect(screen.getByText(/Window:/i)).toBeInTheDocument();
 
       // Should render Safety Contract disclaimer

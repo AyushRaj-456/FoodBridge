@@ -16,9 +16,9 @@ describe('FoodBridge App Shell — ₹0 Spark Baseline', () => {
     expect(skipLink).toBeInTheDocument();
     expect(skipLink).toHaveAttribute('href', '#main-content');
 
-    // Status banner confirming Spark plan
-    expect(screen.getByText('Firebase Spark (₹0 Plan)')).toBeInTheDocument();
-    expect(screen.getByText(/Strict zero-cost contract active/i)).toBeInTheDocument();
+    // Status banner confirming community safety
+    expect(screen.getByText('Verified Safe Handover')).toBeInTheDocument();
+    expect(screen.getByText(/Direct community redistribution/i)).toBeInTheDocument();
   });
 
   it('renders default Donor view on initial load', async () => {

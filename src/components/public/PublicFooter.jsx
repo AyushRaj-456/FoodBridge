@@ -80,7 +80,7 @@ export default function PublicFooter({ onNavigatePublic, onEnterApp }) {
               }}
             >
               <span className="badge badge-verified" style={{ fontSize: '11px' }}>
-                <Shield size={12} /> Spark ₹0 Verified
+                <Shield size={12} /> Community Verified
               </span>
               <span className="badge badge-neutral" style={{ fontSize: '11px' }}>
                 FSSAI Good Samaritan Compliant
@@ -303,8 +303,8 @@ export default function PublicFooter({ onNavigatePublic, onEnterApp }) {
           }}
         >
           <div>
-            &copy; {new Date().getFullYear()} FoodBridge Platform. Free &amp; Open Civic Utility.
-            Operating strictly on Firebase Spark Tier (₹0 budget).
+            &copy; {new Date().getFullYear()} FoodBridge Community Network. Open community
+            initiative. Connecting food donors, verified shelters, and recycling partners.
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
             <button

@@ -23,7 +23,6 @@ import {
   Recycle,
   Layers,
   Bike,
-  Globe,
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -72,7 +71,7 @@ const NAV_ITEMS_BY_ROLE = {
   ],
 };
 
-export default function Sidebar({ currentRole, activeTab, onSelectTab, onOpenPublicSite }) {
+export default function Sidebar({ currentRole, activeTab, onSelectTab }) {
   const items = NAV_ITEMS_BY_ROLE[currentRole] || NAV_ITEMS_BY_ROLE.donor;
 
   return (
@@ -101,16 +100,8 @@ export default function Sidebar({ currentRole, activeTab, onSelectTab, onOpenPub
       </div>
 
       <div className="sidebar-footer">
-        <span className="sidebar-section-title">Compliance &amp; Verification</span>
+        <span className="sidebar-section-title">Guidelines &amp; Support</span>
         <ul className="sidebar-footer-list">
-          {onOpenPublicSite && (
-            <li>
-              <button type="button" className="sidebar-footer-link" onClick={onOpenPublicSite}>
-                <Globe size={16} aria-hidden="true" />
-                <span>Visit Public Website</span>
-              </button>
-            </li>
-          )}
           <li>
             <button
               type="button"
@@ -118,7 +109,7 @@ export default function Sidebar({ currentRole, activeTab, onSelectTab, onOpenPub
               onClick={() => onSelectTab('impact-dashboard')}
             >
               <BarChart3 size={16} aria-hidden="true" />
-              <span>Impact &amp; Verification</span>
+              <span>Community Impact</span>
             </button>
           </li>
           <li>
@@ -128,7 +119,7 @@ export default function Sidebar({ currentRole, activeTab, onSelectTab, onOpenPub
               onClick={() => onSelectTab('onboard-org')}
             >
               <Building size={16} aria-hidden="true" />
-              <span>Register Organisation</span>
+              <span>Register Organization</span>
             </button>
           </li>
           <li>
@@ -148,7 +139,7 @@ export default function Sidebar({ currentRole, activeTab, onSelectTab, onOpenPub
               onClick={() => onSelectTab('help')}
             >
               <HelpCircle size={16} aria-hidden="true" />
-              <span>Offline SOP Guide</span>
+              <span>Food Safety SOP</span>
             </button>
           </li>
           <li>
@@ -158,13 +149,10 @@ export default function Sidebar({ currentRole, activeTab, onSelectTab, onOpenPub
               onClick={() => onSelectTab('terms')}
             >
               <ShieldCheck size={16} aria-hidden="true" />
-              <span>Terms &amp; Protection</span>
+              <span>Terms of Service</span>
             </button>
           </li>
         </ul>
-        <div className="sidebar-cost-badge">
-          <span>Target: Spark ₹0 Plan</span>
-        </div>
       </div>
     </nav>
   );

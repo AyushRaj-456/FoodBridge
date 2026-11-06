@@ -10,10 +10,10 @@ const PRIMARY_ROLES = [
 ];
 
 const EXTENDED_ROLES = [
-  { id: 'farm', label: 'Cattle Farm (Tier 2)' },
-  { id: 'compost', label: 'Compost & Biogas (Tier 3)' },
+  { id: 'farm', label: 'Cattle Farm' },
+  { id: 'compost', label: 'Compost & Biogas' },
   { id: 'routing', label: 'Three-Tier Routing' },
-  { id: 'helper', label: 'Delivery Helper (Future)' },
+  { id: 'helper', label: 'Delivery Helper' },
 ];
 
 export default function RoleSwitcher({ currentRole, onRoleChange, onOpenRoleModal }) {

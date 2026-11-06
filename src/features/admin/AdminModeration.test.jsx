@@ -596,11 +596,9 @@ describe('Admin & Moderation Service — Prompt 17 Security & Operations', () =>
 
       render(<AdminShell activeTab="moderate-listings" />);
 
-      expect(screen.getByText(/Console Admin Provisioning Required/i)).toBeDefined();
+      expect(screen.getByText(/Administrator Access Required/i)).toBeDefined();
       expect(
-        screen.getByText(
-          /administrator privileges are strictly provisioned manually in the Firebase Console/i
-        )
+        screen.getByText(/This console is restricted to authorized platform administrators/i)
       ).toBeDefined();
     });
 
@@ -647,8 +645,8 @@ describe('Admin & Moderation Service — Prompt 17 Security & Operations', () =>
 
       render(<AdminShell activeTab="system-audit" />);
 
-      expect(screen.getByText(/System Audit & Firebase Spark ₹0 Quota Checklist/i)).toBeDefined();
-      expect(screen.getByText(/Firestore Reads \(50k limit\)/i)).toBeDefined();
+      expect(screen.getByText(/System Health & Security Audit Log/i)).toBeDefined();
+      expect(screen.getByText(/Database Sync Operations/i)).toBeDefined();
       expect(screen.getByText(/Append-Only Security Audit Log/i)).toBeDefined();
       expect(screen.getByText(/Events emitted on sensitive status transitions/i)).toBeDefined();
     });
