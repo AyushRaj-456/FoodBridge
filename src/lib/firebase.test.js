@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { app, auth, db, googleProvider } from './firebase.js';
+import { env } from './env.js';
 
 describe('Firebase Client SDK — Spark Plan Setup', () => {
   it('initializes Firebase app with target project ID', () => {
     expect(app).toBeDefined();
     expect(app.name).toBe('[DEFAULT]');
-    expect(app.options.projectId).toBe('foodbridge-spark');
+    expect(app.options.projectId).toBe(env.projectId);
   });
 
   it('initializes Firebase Auth with Google provider option', () => {
