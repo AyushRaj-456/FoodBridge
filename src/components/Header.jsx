@@ -1,4 +1,4 @@
-import { UtensilsCrossed, Bell, User, LogIn, Sun, Moon, Globe } from 'lucide-react';
+import { UtensilsCrossed, Bell, User, LogIn, Sun, Moon, Globe, Menu, X } from 'lucide-react';
 import RoleSwitcher from './RoleSwitcher.jsx';
 import { useAuth } from '../features/auth/useAuth.js';
 import { useTheme } from '../context/ThemeContext.jsx';
@@ -13,6 +13,8 @@ export default function Header({
   onOpenProfile,
   onOpenPublicSite,
   onOpenRoleModal,
+  isDrawerOpen = false,
+  onToggleDrawer,
 }) {
   const { user, profile } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -20,85 +22,99 @@ export default function Header({
   return (
     <header className="app-header">
       <div className="header-inner">
-        {/* Brand */}
-        <div className="header-brand">
-          <div className="brand-logo" aria-hidden="true">
-            <UtensilsCrossed size={20} />
-          </div>
-          <div className="brand-titles">
-            <span className="brand-name">FoodBridge</span>
-            <span className="brand-tag">Surplus Redistribution</span>
+        {/* Left: Navigation Menu Hamburger Button & Brand */}
+        <div className="header-left">
+          <button
+            type="button"
+            className="header-menu-btn"
+            onClick={onToggleDrawer}
+            aria-label={isDrawerOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={isDrawerOpen}
+            title={isDrawerOpen ? 'Close menu' : 'Open menu'}
+          >
+            {isDrawerOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+
+          <div className="header-brand">
+            <div className="brand-logo" aria-hidden="true">
+              <UtensilsCrossed size={17} />
+            </div>
+            <div className="brand-titles">
+              <span className="brand-name">FoodBridge</span>
+            </div>
           </div>
         </div>
 
-        {/* Global Nav Actions */}
-        <div className="header-actions">
-          {/* Public Website Mode Toggle */}
-          {onOpenPublicSite && (
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              onClick={onOpenPublicSite}
-              title="Switch to Public Website"
-              style={{
-                display: 'inline-flex',
-                gap: 'var(--space-1)',
-                padding: 'var(--space-1) var(--space-2)',
-              }}
-            >
-              <Globe size={14} />
-              <span>Public Site</span>
-            </button>
-          )}
-
-          {/* Role Switcher */}
+        {/* Right: Role Switcher, Public Site, Theme, Notifications & Account */}
+        <div className="header-right">
+          {/* Compact Role Switcher Dropdown */}
           <RoleSwitcher
             currentRole={currentRole}
             onRoleChange={onRoleChange}
             onOpenRoleModal={onOpenRoleModal}
           />
 
-          {/* Theme Switcher Toggle */}
+          {/* Public Site Link */}
+          {onOpenPublicSite && (
+            <button
+              type="button"
+              className="header-public-btn"
+              onClick={onOpenPublicSite}
+              title="Visit Public Website"
+            >
+              <Globe size={14} />
+              <span className="header-public-text">Public Site</span>
+            </button>
+          )}
+
+          {/* Theme Toggle */}
           <button
             type="button"
-            className="icon-btn"
+            className="header-icon-btn"
             onClick={toggleTheme}
             aria-label={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Theme`}
             title={`Toggle ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
           >
-            {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </button>
 
           {/* In-App Notifications */}
           {user && (
             <button
               type="button"
-              className="icon-btn"
+              className="header-icon-btn"
               onClick={onOpenNotifications}
               aria-label={`In-App Notifications (${unreadNotifications} unread)`}
               title="Notifications"
             >
-              <Bell size={18} />
+              <Bell size={17} />
               {unreadNotifications > 0 && <span className="notification-indicator" />}
             </button>
           )}
 
-          {/* User Profile or Sign In */}
+          {/* Account Profile Control or Sign In */}
           {user ? (
             <button
               type="button"
-              className="user-profile-badge btn-clickable"
+              className="header-profile-btn"
               onClick={onOpenProfile}
-              title="View User Profile & Status"
+              title="View User Profile & Organization Status"
             >
-              <User size={16} />
-              <span className="user-name">
-                {profile?.displayName || user.displayName || user.email}
+              <div className="profile-avatar-circle">
+                <User size={13} />
+              </div>
+              <span className="profile-user-name">
+                {profile?.displayName || user.displayName || user.email?.split('@')[0]}
               </span>
             </button>
           ) : (
-            <button type="button" className="btn btn-secondary btn-sm" onClick={onOpenAuth}>
-              <LogIn size={15} />
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={onOpenAuth}
+              style={{ minHeight: '34px', padding: '0 10px' }}
+            >
+              <LogIn size={14} />
               <span>Sign In</span>
             </button>
           )}

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import Header from '../components/Header.jsx';
-import StatusBanner from '../components/StatusBanner.jsx';
 import Sidebar from '../components/Sidebar.jsx';
 import BottomNav from '../components/BottomNav.jsx';
 import ListingShell from '../features/listings/ListingShell.jsx';
@@ -46,6 +45,7 @@ export default function AppShell({ initialPublicSite = true }) {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [fromCache, setFromCache] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // Modals state
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -166,17 +166,21 @@ export default function AppShell({ initialPublicSite = true }) {
         onOpenProfile={() => setProfileModalOpen(true)}
         onOpenPublicSite={() => setIsPublicSite(true)}
         onOpenRoleModal={() => setRoleModalOpen(true)}
+        isDrawerOpen={isDrawerOpen}
+        onToggleDrawer={() => setIsDrawerOpen((prev) => !prev)}
       />
 
-      <StatusBanner role={currentRole} />
       <AccountStateBanner />
 
       <div className="app-body">
         <Sidebar
+          isOpen={isDrawerOpen}
+          onClose={() => setIsDrawerOpen(false)}
           currentRole={currentRole}
           activeTab={activeTab}
           onSelectTab={setActiveTab}
           onOpenPublicSite={() => setIsPublicSite(true)}
+          onOpenProfile={() => setProfileModalOpen(true)}
         />
 
         <main id="main-content" className="app-main" tabIndex="-1">

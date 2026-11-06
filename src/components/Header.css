@@ -1,38 +1,75 @@
+/* ==========================================================================
+   FoodBridge Compact Authenticated Header
+   ========================================================================== */
+
 .app-header {
-  background-color: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-  height: var(--header-height);
+  background-color: var(--color-surface, #ffffff);
+  border-bottom: 1px solid var(--color-border, #e3e8e3);
+  height: 56px;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1040;
 }
 
 .header-inner {
-  max-width: var(--content-max-width);
   height: 100%;
-  margin: 0 auto;
-  padding: 0 var(--gutter-desktop);
+  width: 100%;
+  padding: 0 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
+  gap: 12px;
+}
+
+/* Left Group */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-menu-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid var(--color-border, #e3e8e3);
+  background-color: var(--color-canvas, #f7f8f5);
+  color: var(--color-text, #202923);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 140ms ease;
+  flex-shrink: 0;
+}
+
+.header-menu-btn:hover {
+  background-color: var(--color-surface, #ffffff);
+  border-color: var(--color-primary, #245c45);
+  color: var(--color-primary, #245c45);
+}
+
+.header-menu-btn:focus-visible {
+  outline: 2px solid var(--color-primary, #245c45);
+  outline-offset: 1px;
 }
 
 .header-brand {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: 8px;
 }
 
 .brand-logo {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
-  background-color: var(--color-brand-900);
-  color: var(--color-surface);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm, 6px);
+  background-color: var(--color-primary, #245c45);
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .brand-titles {
@@ -41,84 +78,127 @@
 }
 
 .brand-name {
-  font-size: var(--font-size-heading);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-brand-900);
-  line-height: 1.2;
-}
-
-.brand-tag {
-  font-size: var(--font-size-caption);
-  color: var(--color-muted);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--color-text, #202923);
+  letter-spacing: -0.02em;
   line-height: 1;
 }
 
-.header-actions {
+/* Right Group */
+.header-right {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: 8px;
 }
 
-.icon-btn {
-  width: var(--control-min-height);
-  height: var(--control-min-height);
+.header-public-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  height: 34px;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid var(--color-border, #e3e8e3);
+  background-color: transparent;
+  color: var(--color-text-secondary, #66736b);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+
+.header-public-btn:hover {
+  border-color: var(--color-primary, #245c45);
+  color: var(--color-primary, #245c45);
+  background-color: var(--color-canvas, #f7f8f5);
+}
+
+.header-icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid var(--color-border, #e3e8e3);
+  background-color: transparent;
+  color: var(--color-muted, #89928b);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-md);
-  color: var(--color-muted);
+  cursor: pointer;
   position: relative;
-  transition:
-    background-color var(--transition-fast),
-    color var(--transition-fast);
+  transition: all 140ms ease;
+  flex-shrink: 0;
 }
 
-.icon-btn:hover {
-  background-color: var(--color-canvas);
-  color: var(--color-text);
+.header-icon-btn:hover {
+  background-color: var(--color-canvas, #f7f8f5);
+  color: var(--color-text, #202923);
+  border-color: var(--color-primary, #245c45);
 }
 
 .notification-indicator {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 8px;
-  height: 8px;
-  background-color: var(--color-accent-600);
-  border-radius: var(--radius-full);
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  background-color: var(--color-error, #c44747);
+  border-radius: 50%;
+  border: 1.5px solid var(--color-surface, #ffffff);
 }
 
-.user-profile-badge {
+/* User Profile Badge */
+.header-profile-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 4px;
+  height: 34px;
+  border-radius: 17px;
+  border: 1px solid var(--color-border, #e3e8e3);
+  background-color: var(--color-canvas, #f7f8f5);
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+
+.header-profile-btn:hover {
+  background-color: var(--color-surface, #ffffff);
+  border-color: var(--color-primary, #245c45);
+}
+
+.profile-avatar-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--color-light-green, #eaf2ec);
+  color: var(--color-primary, #245c45);
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-1) var(--space-3);
-  background-color: var(--color-canvas);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-label);
-  color: var(--color-text);
+  justify-content: center;
 }
 
-.btn-clickable {
-  cursor: pointer;
-  transition:
-    background-color var(--transition-fast),
-    border-color var(--transition-fast);
+.profile-user-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text, #202923);
+  max-width: 110px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.btn-clickable:hover {
-  background-color: var(--color-brand-100);
-  border-color: var(--color-brand-700);
-}
-
-@media (max-width: 768px) {
-  .header-inner {
-    padding: 0 var(--gutter-mobile);
-  }
-
-  .brand-tag,
-  .user-name {
+@media (max-width: 640px) {
+  .header-public-text {
     display: none;
+  }
+  .header-public-btn {
+    padding: 0 8px;
+  }
+  .profile-user-name {
+    display: none;
+  }
+  .header-profile-btn {
+    padding: 4px;
+    border-radius: 50%;
   }
 }
