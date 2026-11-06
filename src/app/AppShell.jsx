@@ -38,9 +38,9 @@ const DEFAULT_TABS_FOR_ROLE = {
   helper: 'nearby-jobs',
 };
 
-export default function AppShell() {
+export default function AppShell({ initialPublicSite = true }) {
   const { user } = useAuth();
-  const [isPublicSite, setIsPublicSite] = useState(false);
+  const [isPublicSite, setIsPublicSite] = useState(() => (user ? false : initialPublicSite));
   const [currentRole, setCurrentRole] = useState('donor');
   const [activeTab, setActiveTab] = useState(DEFAULT_TABS_FOR_ROLE.donor);
   const [notifications, setNotifications] = useState([]);

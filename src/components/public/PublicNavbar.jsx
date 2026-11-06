@@ -1,15 +1,8 @@
-import { useState } from 'react';
-import {
-  UtensilsCrossed,
-  Sun,
-  Moon,
-  LogIn,
-  LayoutDashboard,
-  Menu,
-  X,
-  ArrowRight,
-} from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { UtensilsCrossed, Sun, Moon, ChevronDown, Menu, X, ArrowRight, LogIn } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext.jsx';
+import { useAuth } from '../../features/auth/useAuth.js';
+import './PublicNavbar.css';
 
 export default function PublicNavbar({
   activePublicPage,
@@ -18,251 +11,432 @@ export default function PublicNavbar({
   onEnterApp,
 }) {
   const { theme, toggleTheme } = useTheme();
+  const { user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navLinks = [
-    { id: 'landing', label: 'Home' },
-    { id: 'how-it-works', label: 'How It Works' },
-    { id: 'impact', label: 'Impact' },
-    { id: 'for-donors', label: 'Donors' },
-    { id: 'for-ngos', label: 'NGOs' },
-    { id: 'for-farms', label: 'Farms' },
-    { id: 'about', label: 'About' },
-    { id: 'contact', label: 'Contact' },
-  ];
+  // Desktop Dropdown Open States
+  const [donorsDropdownOpen, setDonorsDropdownOpen] = useState(false);
+  const [ngosDropdownOpen, setNgosDropdownOpen] = useState(false);
 
-  const handleLinkClick = (id) => {
-    onNavigatePublic(id);
+  // Mobile Accordion Open States inside Drawer
+  const [mobileDonorsOpen, setMobileDonorsOpen] = useState(false);
+  const [mobileNgosOpen, setMobileNgosOpen] = useState(false);
+
+  const donorsTimeoutRef = useRef(null);
+  const ngosTimeoutRef = useRef(null);
+
+  // Close mobile menu on Escape
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setMobileMenuOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const handleShareFoodClick = () => {
     setMobileMenuOpen(false);
+    if (user) {
+      if (typeof onEnterApp === 'function') onEnterApp('donor');
+    } else {
+      if (typeof onOpenAuth === 'function') onOpenAuth();
+    }
+  };
+
+  const handleSectionScroll = (sectionId) => {
+    setMobileMenuOpen(false);
+    if (activePublicPage !== 'landing') {
+      if (typeof onNavigatePublic === 'function') onNavigatePublic('landing');
+      setTimeout(() => {
+        const el = document.getElementById(sectionId);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } else {
+      const el = document.getElementById(sectionId);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handlePageClick = (pageId) => {
+    setMobileMenuOpen(false);
+    if (typeof onNavigatePublic === 'function') onNavigatePublic(pageId);
   };
 
   return (
-    <header
-      style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-        backgroundColor: 'var(--color-surface)',
-        borderBottom: '1px solid var(--color-border)',
-        boxShadow: 'var(--shadow-sm)',
-        backdropFilter: 'blur(8px)',
-      }}
-    >
-      <div
-        style={{
-          maxWidth: 'var(--content-max-width)',
-          margin: '0 auto',
-          padding: '0 var(--gutter-desktop)',
-          height: 'var(--header-height)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 'var(--space-4)',
-        }}
-      >
-        {/* Brand */}
+    <header className="public-navbar-header">
+      <div className="public-navbar-container">
+        {/* Brand Logo */}
         <button
           type="button"
-          onClick={() => handleLinkClick('landing')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--space-3)',
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: 0,
-            textAlign: 'left',
-          }}
+          onClick={() => handlePageClick('landing')}
+          className="nav-brand-btn"
           aria-label="FoodBridge Home"
         >
-          <div
-            style={{
-              width: '38px',
-              height: '38px',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: 'var(--color-primary)',
-              color: '#ffffff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            <UtensilsCrossed size={20} />
+          <div className="nav-brand-icon">
+            <UtensilsCrossed size={19} />
           </div>
           <div>
-            <div
-              style={{
-                fontFamily: 'var(--font-family-heading)',
-                fontSize: '1.25rem',
-                fontWeight: 'var(--font-weight-bold)',
-                color: 'var(--color-brand-900)',
-                letterSpacing: '-0.02em',
-                lineHeight: 1.1,
-              }}
-            >
-              FoodBridge
-            </div>
-            <div
-              style={{
-                fontSize: '11px',
-                color: 'var(--color-muted)',
-                letterSpacing: '0.02em',
-                textTransform: 'uppercase',
-                fontWeight: 'var(--font-weight-medium)',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              Rescue Food &bull; Restore Balance
-            </div>
+            <div className="nav-brand-title">FoodBridge</div>
+            <div className="nav-brand-tagline">Rescue Food &bull; Restore Balance</div>
           </div>
         </button>
 
-        {/* Desktop Navigation Links */}
-        <nav
-          style={{
-            display: 'none',
-            alignItems: 'center',
-            gap: 'var(--space-1)',
-          }}
-          className="desktop-nav"
-        >
-          {navLinks.map((link) => {
-            const isActive = activePublicPage === link.id;
-            return (
+        {/* Center Desktop Links with Slide-down Dropdowns */}
+        <nav className="desktop-nav-center" aria-label="Main Navigation">
+          <button
+            type="button"
+            className="nav-link-btn"
+            onClick={() => handleSectionScroll('how-it-works')}
+          >
+            How it works
+          </button>
+
+          <button
+            type="button"
+            className="nav-link-btn"
+            onClick={() => handleSectionScroll('live-activity')}
+          >
+            Live activity
+          </button>
+
+          {/* For Donors Dropdown */}
+          <div
+            className="nav-dropdown-wrapper"
+            onMouseEnter={() => {
+              if (donorsTimeoutRef.current) clearTimeout(donorsTimeoutRef.current);
+              setDonorsDropdownOpen(true);
+            }}
+            onMouseLeave={() => {
+              donorsTimeoutRef.current = setTimeout(() => setDonorsDropdownOpen(false), 150);
+            }}
+          >
+            <button
+              type="button"
+              className="nav-link-btn"
+              aria-expanded={donorsDropdownOpen}
+              onClick={() => setDonorsDropdownOpen((prev) => !prev)}
+            >
+              <span>For donors</span>
+              <ChevronDown size={14} />
+            </button>
+            <div className={`dropdown-menu ${donorsDropdownOpen ? 'show' : ''}`}>
               <button
-                key={link.id}
                 type="button"
-                onClick={() => handleLinkClick(link.id)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: 'var(--space-2) var(--space-3)',
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: 'var(--font-size-label)',
-                  fontWeight: isActive
-                    ? 'var(--font-weight-semibold)'
-                    : 'var(--font-weight-medium)',
-                  color: isActive ? 'var(--color-primary)' : 'var(--color-muted)',
-                  cursor: 'pointer',
-                  transition: 'color var(--transition-fast)',
-                }}
+                className="dropdown-item"
+                onClick={() => handlePageClick('for-donors')}
               >
-                {link.label}
+                <span className="dropdown-item-title">Messes &amp; Hostels</span>
+                <span className="dropdown-item-desc">
+                  Bulk cooked meals &amp; student kitchen surplus
+                </span>
               </button>
-            );
-          })}
+              <button
+                type="button"
+                className="dropdown-item"
+                onClick={() => handlePageClick('for-donors')}
+              >
+                <span className="dropdown-item-title">Restaurants &amp; Caterers</span>
+                <span className="dropdown-item-desc">
+                  Event catering &amp; daily end-of-service items
+                </span>
+              </button>
+              <button
+                type="button"
+                className="dropdown-item"
+                onClick={() => handlePageClick('for-donors')}
+              >
+                <span className="dropdown-item-title">Food Stores &amp; Bakeries</span>
+                <span className="dropdown-item-desc">
+                  Safe packaged staples, dairy &amp; baked goods
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* For NGOs Dropdown */}
+          <div
+            className="nav-dropdown-wrapper"
+            onMouseEnter={() => {
+              if (ngosTimeoutRef.current) clearTimeout(ngosTimeoutRef.current);
+              setNgosDropdownOpen(true);
+            }}
+            onMouseLeave={() => {
+              ngosTimeoutRef.current = setTimeout(() => setNgosDropdownOpen(false), 150);
+            }}
+          >
+            <button
+              type="button"
+              className="nav-link-btn"
+              aria-expanded={ngosDropdownOpen}
+              onClick={() => setNgosDropdownOpen((prev) => !prev)}
+            >
+              <span>For NGOs</span>
+              <ChevronDown size={14} />
+            </button>
+            <div className={`dropdown-menu ${ngosDropdownOpen ? 'show' : ''}`}>
+              <button
+                type="button"
+                className="dropdown-item"
+                onClick={() => handlePageClick('for-ngos')}
+              >
+                <span className="dropdown-item-title">Food Shelters &amp; Homes</span>
+                <span className="dropdown-item-desc">
+                  Daily nutritious feeding for children &amp; elders
+                </span>
+              </button>
+              <button
+                type="button"
+                className="dropdown-item"
+                onClick={() => handlePageClick('for-ngos')}
+              >
+                <span className="dropdown-item-title">Community Kitchens</span>
+                <span className="dropdown-item-desc">
+                  Neighborhood food distribution &amp; relief
+                </span>
+              </button>
+              <button
+                type="button"
+                className="dropdown-item"
+                onClick={() => handlePageClick('for-farms')}
+              >
+                <span className="dropdown-item-title">Animal Welfare &amp; Farms</span>
+                <span className="dropdown-item-desc">
+                  Safe clean greens &amp; grain for gaushalas
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className={`nav-link-btn ${activePublicPage === 'about' ? 'active' : ''}`}
+            onClick={() => handlePageClick('about')}
+          >
+            About
+          </button>
         </nav>
 
-        {/* Right CTA Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          {/* Theme Switcher */}
+        {/* Right Nav Controls */}
+        <div className="nav-right-controls">
+          {/* Light / Dark Theme Toggle */}
           <button
             type="button"
-            className="icon-btn"
             onClick={toggleTheme}
-            aria-label={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Theme`}
-            title={`Toggle ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+            className="theme-toggle-btn"
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            aria-label="Toggle visual theme"
           >
-            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
           </button>
 
-          {/* Sign In */}
+          {/* Sign In Outline Button */}
           <button
             type="button"
-            className="btn btn-secondary btn-sm"
+            className="btn-nav-signin"
             onClick={onOpenAuth}
-            style={{ display: 'inline-flex' }}
+            aria-label="Sign in to your account"
           >
             <LogIn size={15} />
-            <span>Sign In</span>
+            <span>Sign in</span>
           </button>
 
-          {/* Enter Authenticated App */}
+          {/* Share Food Main Accent Button */}
           <button
             type="button"
-            className="btn btn-primary btn-sm"
-            onClick={onEnterApp}
-            style={{ display: 'inline-flex' }}
+            className="btn-nav-accent"
+            onClick={handleShareFoodClick}
+            aria-label="Share surplus food"
           >
-            <LayoutDashboard size={15} />
-            <span>Open App</span>
-            <ArrowRight size={14} />
+            <span>Share food</span>
+            <ArrowRight size={15} />
           </button>
 
-          {/* Mobile Menu Trigger */}
+          {/* Mobile Hamburger Toggle */}
           <button
             type="button"
-            className="icon-btn mobile-menu-btn"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle Mobile Menu"
-            style={{ display: 'inline-flex' }}
+            className="hamburger-btn"
+            onClick={() => setMobileMenuOpen(true)}
+            aria-label="Open mobile navigation menu"
+            aria-expanded={mobileMenuOpen}
           >
-            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            <Menu size={20} />
           </button>
         </div>
       </div>
 
-      {/* Mobile Nav Dropdown */}
-      {mobileMenuOpen && (
-        <div
-          style={{
-            borderTop: '1px solid var(--color-border)',
-            backgroundColor: 'var(--color-surface)',
-            padding: 'var(--space-4) var(--gutter-mobile)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--space-2)',
-          }}
-        >
-          {navLinks.map((link) => (
-            <button
-              key={link.id}
-              type="button"
-              onClick={() => handleLinkClick(link.id)}
-              style={{
-                background: activePublicPage === link.id ? 'var(--color-surface-hover)' : 'none',
-                border: 'none',
-                padding: 'var(--space-2) var(--space-3)',
-                borderRadius: 'var(--radius-sm)',
-                textAlign: 'left',
-                fontSize: 'var(--font-size-body)',
-                fontWeight:
-                  activePublicPage === link.id
-                    ? 'var(--font-weight-semibold)'
-                    : 'var(--font-weight-regular)',
-                color: activePublicPage === link.id ? 'var(--color-primary)' : 'var(--color-text)',
-                cursor: 'pointer',
-              }}
-            >
-              {link.label}
-            </button>
-          ))}
-          <div style={{ paddingTop: 'var(--space-3)', borderTop: '1px solid var(--color-border)' }}>
-            <button
-              type="button"
-              className="btn btn-primary"
-              style={{ width: '100%' }}
-              onClick={onEnterApp}
-            >
-              <LayoutDashboard size={16} />
-              <span>Launch Operations App</span>
-            </button>
-          </div>
-        </div>
-      )}
+      {/* ====================================================================
+          Mobile Slide-in Drawer
+          ==================================================================== */}
+      <div
+        className={`mobile-drawer-overlay ${mobileMenuOpen ? 'open' : ''}`}
+        onClick={() => setMobileMenuOpen(false)}
+        aria-hidden={!mobileMenuOpen}
+      />
 
-      <style>{`
-        @media (min-width: 992px) {
-          .desktop-nav {
-            display: flex !important;
-          }
-          .mobile-menu-btn {
-            display: none !important;
-          }
-        }
-      `}</style>
+      <div
+        className={`mobile-drawer ${mobileMenuOpen ? 'open' : ''}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mobile Navigation"
+      >
+        <div className="drawer-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="nav-brand-icon" style={{ width: '28px', height: '28px' }}>
+              <UtensilsCrossed size={15} />
+            </div>
+            <strong style={{ fontSize: '1.1rem' }}>FoodBridge</strong>
+          </div>
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'var(--color-muted)',
+              padding: '4px',
+            }}
+            aria-label="Close navigation menu"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="drawer-body">
+          <button
+            type="button"
+            className="drawer-link"
+            onClick={() => handleSectionScroll('how-it-works')}
+          >
+            How it works
+          </button>
+
+          <button
+            type="button"
+            className="drawer-link"
+            onClick={() => handleSectionScroll('live-activity')}
+          >
+            Live activity
+          </button>
+
+          {/* For Donors Accordion */}
+          <div>
+            <button
+              type="button"
+              className="drawer-link"
+              onClick={() => setMobileDonorsOpen((prev) => !prev)}
+              aria-expanded={mobileDonorsOpen}
+            >
+              <span>For Donors</span>
+              <ChevronDown
+                size={16}
+                style={{
+                  transform: mobileDonorsOpen ? 'rotate(180deg)' : 'none',
+                  transition: 'transform 0.2s ease',
+                }}
+              />
+            </button>
+            {mobileDonorsOpen && (
+              <div className="drawer-sub-menu">
+                <button
+                  type="button"
+                  className="drawer-sub-link"
+                  onClick={() => handlePageClick('for-donors')}
+                >
+                  Messes &amp; Hostels
+                </button>
+                <button
+                  type="button"
+                  className="drawer-sub-link"
+                  onClick={() => handlePageClick('for-donors')}
+                >
+                  Restaurants &amp; Caterers
+                </button>
+                <button
+                  type="button"
+                  className="drawer-sub-link"
+                  onClick={() => handlePageClick('for-donors')}
+                >
+                  Food Stores &amp; Bakeries
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* For NGOs Accordion */}
+          <div>
+            <button
+              type="button"
+              className="drawer-link"
+              onClick={() => setMobileNgosOpen((prev) => !prev)}
+              aria-expanded={mobileNgosOpen}
+            >
+              <span>For NGOs</span>
+              <ChevronDown
+                size={16}
+                style={{
+                  transform: mobileNgosOpen ? 'rotate(180deg)' : 'none',
+                  transition: 'transform 0.2s ease',
+                }}
+              />
+            </button>
+            {mobileNgosOpen && (
+              <div className="drawer-sub-menu">
+                <button
+                  type="button"
+                  className="drawer-sub-link"
+                  onClick={() => handlePageClick('for-ngos')}
+                >
+                  Food Shelters &amp; Homes
+                </button>
+                <button
+                  type="button"
+                  className="drawer-sub-link"
+                  onClick={() => handlePageClick('for-ngos')}
+                >
+                  Community Kitchens
+                </button>
+                <button
+                  type="button"
+                  className="drawer-sub-link"
+                  onClick={() => handlePageClick('for-farms')}
+                >
+                  Animal Welfare &amp; Farms
+                </button>
+              </div>
+            )}
+          </div>
+
+          <button type="button" className="drawer-link" onClick={() => handlePageClick('about')}>
+            About
+          </button>
+        </div>
+
+        <div className="drawer-footer">
+          <button
+            type="button"
+            className="btn-hero-accent"
+            style={{ width: '100%', minHeight: '44px', fontSize: '0.9375rem' }}
+            onClick={handleShareFoodClick}
+          >
+            <span>Share food</span>
+            <ArrowRight size={16} />
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-secondary"
+            style={{ width: '100%', minHeight: '42px', fontSize: '0.9375rem' }}
+            onClick={() => {
+              setMobileMenuOpen(false);
+              if (typeof onOpenAuth === 'function') onOpenAuth();
+            }}
+          >
+            <LogIn size={15} />
+            <span>Sign in</span>
+          </button>
+        </div>
+      </div>
     </header>
   );
 }

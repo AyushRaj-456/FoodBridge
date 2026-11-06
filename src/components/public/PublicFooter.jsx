@@ -1,48 +1,48 @@
-import { UtensilsCrossed, Shield, Mail, Phone, MapPin } from 'lucide-react';
+import { UtensilsCrossed, ShieldCheck, Mail, Phone, MapPin, Heart } from 'lucide-react';
 
 export default function PublicFooter({ onNavigatePublic, onEnterApp }) {
   return (
     <footer
       style={{
-        backgroundColor: 'var(--color-surface)',
-        borderTop: '1px solid var(--color-border)',
-        paddingTop: 'var(--space-12)',
-        paddingBottom: 'var(--space-8)',
-        marginTop: 'var(--space-16)',
+        backgroundColor: '#0f2f26',
+        color: '#ffffff',
+        borderTop: '1px solid rgba(255, 255, 255, 0.12)',
+        paddingTop: 'var(--space-12, 3rem)',
+        paddingBottom: 'var(--space-8, 2rem)',
       }}
     >
       <div
         style={{
-          maxWidth: 'var(--content-max-width)',
+          maxWidth: 'var(--content-max-width, 1280px)',
           margin: '0 auto',
-          padding: '0 var(--gutter-desktop)',
+          padding: '0 var(--gutter-desktop, 2rem)',
         }}
       >
         <div
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: 'var(--space-8)',
-            marginBottom: 'var(--space-12)',
+            gap: 'var(--space-8, 2rem)',
+            marginBottom: 'var(--space-12, 3rem)',
           }}
         >
-          {/* Col 1: Brand & Philosophy */}
+          {/* Col 1: Brand & Community Philosophy */}
           <div style={{ maxWidth: '340px' }}>
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 'var(--space-2)',
-                marginBottom: 'var(--space-3)',
+                gap: 'var(--space-2, 0.5rem)',
+                marginBottom: 'var(--space-3, 0.75rem)',
               }}
             >
               <div
                 style={{
                   width: '32px',
                   height: '32px',
-                  borderRadius: 'var(--radius-sm)',
-                  backgroundColor: 'var(--color-primary)',
-                  color: '#ffffff',
+                  borderRadius: '6px',
+                  backgroundColor: '#d8f34e',
+                  color: '#0d2b22',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -54,37 +54,41 @@ export default function PublicFooter({ onNavigatePublic, onEnterApp }) {
                 style={{
                   fontFamily: 'var(--font-family-heading)',
                   fontSize: '1.25rem',
-                  fontWeight: 'var(--font-weight-bold)',
-                  color: 'var(--color-brand-900)',
+                  fontWeight: 800,
+                  color: '#ffffff',
+                  letterSpacing: '-0.02em',
                 }}
               >
                 FoodBridge
               </span>
             </div>
             <p
-              className="text-muted"
-              style={{ fontSize: 'var(--font-size-label)', lineHeight: 1.6 }}
+              style={{
+                fontSize: '0.875rem',
+                lineHeight: 1.6,
+                color: 'rgba(255, 255, 255, 0.75)',
+              }}
             >
-              A modern community-driven surplus food redistribution and organic waste management
-              platform. Operating under the strict principle:
-              <strong style={{ display: 'block', color: 'var(--color-text)', marginTop: '4px' }}>
-                PREVENT &rarr; REDISTRIBUTE &rarr; RECYCLE &rarr; MEASURE IMPACT
-              </strong>
+              A community food redistribution network connecting surplus kitchen meals with nearby
+              reviewed shelters and community welfare organizations.
             </p>
             <div
               style={{
-                display: 'flex',
+                marginTop: 'var(--space-4, 1rem)',
+                display: 'inline-flex',
                 alignItems: 'center',
-                gap: 'var(--space-2)',
-                marginTop: 'var(--space-4)',
+                gap: '6px',
+                padding: '4px 10px',
+                borderRadius: '4px',
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(255, 255, 255, 0.14)',
+                fontSize: '0.75rem',
+                color: '#d8f34e',
+                fontWeight: 600,
               }}
             >
-              <span className="badge badge-verified" style={{ fontSize: '11px' }}>
-                <Shield size={12} /> Community Verified
-              </span>
-              <span className="badge badge-neutral" style={{ fontSize: '11px' }}>
-                FSSAI Good Samaritan Compliant
-              </span>
+              <ShieldCheck size={14} />
+              <span>Reviewed by Our Team &bull; Privacy Protected</span>
             </div>
           </div>
 
@@ -92,14 +96,15 @@ export default function PublicFooter({ onNavigatePublic, onEnterApp }) {
           <div>
             <h4
               style={{
-                fontSize: 'var(--font-size-label)',
+                fontSize: '0.8125rem',
                 textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                color: 'var(--color-muted)',
-                marginBottom: 'var(--space-4)',
+                letterSpacing: '0.08em',
+                color: 'rgba(255, 255, 255, 0.55)',
+                marginBottom: 'var(--space-4, 1rem)',
+                fontWeight: 700,
               }}
             >
-              Platforms &amp; Stakeholders
+              For Communities
             </h4>
             <ul
               style={{
@@ -108,74 +113,95 @@ export default function PublicFooter({ onNavigatePublic, onEnterApp }) {
                 margin: 0,
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 'var(--space-2)',
+                gap: 'var(--space-2, 0.5rem)',
               }}
             >
               <li>
                 <button
                   type="button"
-                  className="btn-quiet"
-                  style={{ padding: 0, fontSize: 'var(--font-size-body)' }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
                   onClick={() => onNavigatePublic('for-donors')}
                 >
-                  For Donors &amp; Canteens
+                  For Messes &amp; Kitchens
                 </button>
               </li>
               <li>
                 <button
                   type="button"
-                  className="btn-quiet"
-                  style={{ padding: 0, fontSize: 'var(--font-size-body)' }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
                   onClick={() => onNavigatePublic('for-ngos')}
                 >
-                  For Verified NGOs
+                  For Reviewed NGOs
                 </button>
               </li>
               <li>
                 <button
                   type="button"
-                  className="btn-quiet"
-                  style={{ padding: 0, fontSize: 'var(--font-size-body)' }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
                   onClick={() => onNavigatePublic('for-farms')}
                 >
-                  For Cattle Farms
+                  For Cattle Farms &amp; Composting
                 </button>
               </li>
               <li>
                 <button
                   type="button"
-                  className="btn-quiet"
-                  style={{ padding: 0, fontSize: 'var(--font-size-body)' }}
-                  onClick={() => onNavigatePublic('for-farms')}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
+                  onClick={() => {
+                    if (typeof onEnterApp === 'function') onEnterApp('donor');
+                  }}
                 >
-                  For Composting &amp; Biogas
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  className="btn-quiet"
-                  style={{ padding: 0, fontSize: 'var(--font-size-body)' }}
-                  onClick={onEnterApp}
-                >
-                  Mess Analytics Module
+                  Donor Portal
                 </button>
               </li>
             </ul>
           </div>
 
-          {/* Col 3: Platform Resources */}
+          {/* Col 3: Guidelines & Trust */}
           <div>
             <h4
               style={{
-                fontSize: 'var(--font-size-label)',
+                fontSize: '0.8125rem',
                 textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                color: 'var(--color-muted)',
-                marginBottom: 'var(--space-4)',
+                letterSpacing: '0.08em',
+                color: 'rgba(255, 255, 255, 0.55)',
+                marginBottom: 'var(--space-4, 1rem)',
+                fontWeight: 700,
               }}
             >
-              Resources &amp; Trust
+              Trust &amp; Guidelines
             </h4>
             <ul
               style={{
@@ -184,34 +210,38 @@ export default function PublicFooter({ onNavigatePublic, onEnterApp }) {
                 margin: 0,
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 'var(--space-2)',
+                gap: 'var(--space-2, 0.5rem)',
               }}
             >
               <li>
                 <button
                   type="button"
-                  className="btn-quiet"
-                  style={{ padding: 0, fontSize: 'var(--font-size-body)' }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
                   onClick={() => onNavigatePublic('how-it-works')}
                 >
-                  How It Works SOP
+                  How It Works
                 </button>
               </li>
               <li>
                 <button
                   type="button"
-                  className="btn-quiet"
-                  style={{ padding: 0, fontSize: 'var(--font-size-body)' }}
-                  onClick={() => onNavigatePublic('impact')}
-                >
-                  Audited Impact Dashboard
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  className="btn-quiet"
-                  style={{ padding: 0, fontSize: 'var(--font-size-body)' }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
                   onClick={() => onNavigatePublic('about')}
                 >
                   About FoodBridge
@@ -220,119 +250,154 @@ export default function PublicFooter({ onNavigatePublic, onEnterApp }) {
               <li>
                 <button
                   type="button"
-                  className="btn-quiet"
-                  style={{ padding: 0, fontSize: 'var(--font-size-body)' }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
                   onClick={() => onNavigatePublic('privacy')}
                 >
-                  Data Privacy &amp; 30-Day Purge
+                  Privacy &amp; Data Minimization
                 </button>
               </li>
               <li>
                 <button
                   type="button"
-                  className="btn-quiet"
-                  style={{ padding: 0, fontSize: 'var(--font-size-body)' }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
                   onClick={() => onNavigatePublic('terms')}
                 >
-                  Terms &amp; FSSAI Protection
+                  Terms of Service
                 </button>
               </li>
             </ul>
           </div>
 
-          {/* Col 4: Institutional Pilots & Contact */}
+          {/* Col 4: Help & Contact */}
           <div>
             <h4
               style={{
-                fontSize: 'var(--font-size-label)',
+                fontSize: '0.8125rem',
                 textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                color: 'var(--color-muted)',
-                marginBottom: 'var(--space-4)',
+                letterSpacing: '0.08em',
+                color: 'rgba(255, 255, 255, 0.55)',
+                marginBottom: 'var(--space-4, 1rem)',
+                fontWeight: 700,
               }}
             >
-              Pilot Administration
+              Contact &amp; Support
             </h4>
             <div
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 'var(--space-2)',
-                fontSize: 'var(--font-size-label)',
-                color: 'var(--color-muted)',
+                gap: 'var(--space-2, 0.5rem)',
+                fontSize: '0.875rem',
+                color: 'rgba(255, 255, 255, 0.75)',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                <MapPin size={16} color="var(--color-primary)" />
-                <span>North Campus Mess 3 &bull; Pilot Cell</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <MapPin size={15} color="#d8f34e" />
+                <span>North Campus Sector &bull; Community Cell</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                <Mail size={16} color="var(--color-primary)" />
-                <span>pilot@foodbridge.civic</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Mail size={15} color="#d8f34e" />
+                <span>support@foodbridge.org</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                <Phone size={16} color="var(--color-primary)" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Phone size={15} color="#d8f34e" />
                 <span>Helpdesk: +91 94450 99887</span>
               </div>
-              <div style={{ marginTop: 'var(--space-2)' }}>
+              <div style={{ marginTop: 'var(--space-2, 0.5rem)' }}>
                 <button
                   type="button"
-                  className="btn btn-secondary btn-sm"
-                  style={{ width: '100%', marginTop: 'var(--space-1)' }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    width: '100%',
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    color: '#ffffff',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    padding: '8px 14px',
+                    borderRadius: '6px',
+                    fontSize: '0.8125rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
                   onClick={() => onNavigatePublic('contact')}
                 >
-                  Contact Pilot Coordinator
+                  Get in Touch
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom bar */}
+        {/* Bottom Bar */}
         <div
           style={{
-            borderTop: '1px solid var(--color-border)',
-            paddingTop: 'var(--space-6)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            paddingTop: 'var(--space-6, 1.5rem)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             flexWrap: 'wrap',
-            gap: 'var(--space-4)',
-            fontSize: 'var(--font-size-caption)',
-            color: 'var(--color-muted)',
+            gap: 'var(--space-4, 1rem)',
+            fontSize: '0.75rem',
+            color: 'rgba(255, 255, 255, 0.6)',
           }}
         >
           <div>
-            &copy; {new Date().getFullYear()} FoodBridge Community Network. Open community
-            initiative. Connecting food donors, verified shelters, and recycling partners.
+            &copy; {new Date().getFullYear()} FoodBridge Community Redistribution Platform. Built
+            for positive community impact.
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <button
               type="button"
-              className="btn-quiet"
-              style={{ padding: 0, fontSize: 'var(--font-size-caption)' }}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                color: 'rgba(255, 255, 255, 0.75)',
+                fontSize: '0.75rem',
+                cursor: 'pointer',
+              }}
               onClick={() => onNavigatePublic('privacy')}
             >
-              Privacy Policy
+              Privacy
             </button>
             <span>&bull;</span>
             <button
               type="button"
-              className="btn-quiet"
-              style={{ padding: 0, fontSize: 'var(--font-size-caption)' }}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                color: 'rgba(255, 255, 255, 0.75)',
+                fontSize: '0.75rem',
+                cursor: 'pointer',
+              }}
               onClick={() => onNavigatePublic('terms')}
             >
-              Terms of Service
+              Terms
             </button>
             <span>&bull;</span>
-            <button
-              type="button"
-              className="btn-quiet"
-              style={{ padding: 0, fontSize: 'var(--font-size-caption)' }}
-              onClick={() => onNavigatePublic('contact')}
-            >
-              Campus Mess Pilot Cell
-            </button>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              Built with <Heart size={12} color="#d8f34e" fill="#d8f34e" /> for community welfare
+            </span>
           </div>
         </div>
       </div>

@@ -3,9 +3,26 @@ import { describe, it, expect } from 'vitest';
 import App from './App.jsx';
 
 describe('FoodBridge App Shell — ₹0 Spark Baseline', () => {
-  it('renders the brand name, skip link, and Spark ₹0 status banner', async () => {
+  it('renders public home page by default when visiting root', async () => {
     await act(async () => {
       render(<App />);
+    });
+
+    expect(screen.getAllByText('FoodBridge').length).toBeGreaterThan(0);
+    expect(
+      screen.getByRole('heading', { level: 1, name: /Good food shouldn't go to waste/i })
+    ).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /Share surplus food/i }).length).toBeGreaterThan(
+      0
+    );
+    expect(
+      screen.getByRole('heading', { level: 2, name: /Live Redistribution Activity/i })
+    ).toBeInTheDocument();
+  });
+
+  it('renders the brand name, skip link, and status banner in operations mode', async () => {
+    await act(async () => {
+      render(<App initialPublic={false} />);
     });
 
     // Brand title
@@ -21,9 +38,9 @@ describe('FoodBridge App Shell — ₹0 Spark Baseline', () => {
     expect(screen.getByText(/Direct community redistribution/i)).toBeInTheDocument();
   });
 
-  it('renders default Donor view on initial load', async () => {
+  it('renders default Donor view on initial load in operations mode', async () => {
     await act(async () => {
-      render(<App />);
+      render(<App initialPublic={false} />);
     });
 
     expect(
@@ -34,7 +51,7 @@ describe('FoodBridge App Shell — ₹0 Spark Baseline', () => {
 
   it('switches views when role switcher buttons are clicked', async () => {
     await act(async () => {
-      render(<App />);
+      render(<App initialPublic={false} />);
     });
 
     // Switch to Recipient
@@ -70,7 +87,7 @@ describe('FoodBridge App Shell — ₹0 Spark Baseline', () => {
 
   it('renders privacy notice when clicking sidebar compliance link', async () => {
     await act(async () => {
-      render(<App />);
+      render(<App initialPublic={false} />);
     });
 
     const privacyBtn = screen.getByRole('button', { name: /Privacy & Retention/i });
