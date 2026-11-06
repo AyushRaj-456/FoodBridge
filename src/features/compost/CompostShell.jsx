@@ -1,65 +1,46 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Recycle, CheckCircle2, Flame, Leaf } from 'lucide-react';
+import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { db } from '../../lib/firebase.js';
 import EmptyState from '../../components/common/EmptyState.jsx';
 import ConfirmDialog from '../../components/common/ConfirmDialog.jsx';
 
-const SAMPLE_ORGANIC_WASTE_LISTINGS = [
-  {
-    id: 'org-waste-201',
-    title: 'Post-Meal Plate Organics & Kitchen Scraps',
-    donorOrg: 'North Campus Mess 3 Cleaning Station',
-    category: 'Cooked Plate Waste & Kitchen Organics',
-    quantity: 65,
-    unit: 'kg',
-    compatibility: 'Anaerobic Biogas Digestion & Thermal Composting',
-    pickupLocation: 'Rear Loading Dock & Waste Bay 2',
-    pickupWindow: '21:30 – 23:00 Nightly',
-    status: 'published',
-  },
-  {
-    id: 'org-waste-202',
-    title: 'Spent Coffee Grounds & Tea Leaves',
-    donorOrg: 'Campus Cafeteria Cluster (3 outlets)',
-    category: 'High Nitrogen Organic Beverage Waste',
-    quantity: 25,
-    unit: 'kg',
-    compatibility: 'Vermicomposting Accelerator',
-    pickupLocation: 'Cafeteria Service Alleys',
-    pickupWindow: '20:00 – 22:00 Today',
-    status: 'published',
-  },
-];
-
-const SAMPLE_PROCESSING_HISTORY = [
-  {
-    id: 'proc-hist-01',
-    date: 'Nov 03, 2026',
-    wasteType: 'Mixed Plate Organic Waste',
-    quantity: '70 kg',
-    method: 'Anaerobic Biogas Digestion',
-    yieldOutput: '~14 m³ Biogas fuel generated',
-    status: 'completed',
-  },
-  {
-    id: 'proc-hist-02',
-    date: 'Oct 30, 2026',
-    wasteType: 'Kitchen Veg Peels & Coffee Scraps',
-    quantity: '110 kg',
-    method: 'Aerobic Vermicomposting',
-    yieldOutput: '~55 kg Bio-fertilizer in curing pile',
-    status: 'completed',
-  },
-];
-
 export default function CompostShell({ initialTab = 'facility-dashboard' }) {
   const [activeTab, setActiveTab] = useState(initialTab);
-  const [wasteListings, setWasteListings] = useState(SAMPLE_ORGANIC_WASTE_LISTINGS);
+  const [wasteListings, setWasteListings] = useState([]);
   const [claimedBatches, setClaimedBatches] = useState([]);
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, item: null });
   const [successMessage, setSuccessMessage] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const processingCapacityKgDay = 500;
-  const wasteReceivedMonthKg = 480;
+  // Live Firestore fetch for organic route listings
+  useEffect(() => {
+    let isMounted = true;
+    async function loadOrganicListings() {
+      try {
+        setLoading(true);
+        const q = query(
+          collection(db, 'listings'),
+          where('routeTier', '==', 'organic'),
+          where('status', '==', 'published'),
+          limit(25)
+        );
+        const snap = await getDocs(q);
+        if (isMounted) {
+          const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+          setWasteListings(docs);
+        }
+      } catch (err) {
+        console.warn('[CompostShell] Live organic waste listings fetch:', err.message);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+    loadOrganicListings();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleClaim = (item) => {
     setConfirmModal({ isOpen: true, item });
@@ -70,9 +51,11 @@ export default function CompostShell({ initialTab = 'facility-dashboard' }) {
     const item = confirmModal.item;
     setClaimedBatches((prev) => [item, ...prev]);
     setWasteListings((prev) => prev.filter((w) => w.id !== item.id));
-    setSuccessMessage(`Organic waste batch "${item.title}" scheduled for facility pickup!`);
+    setSuccessMessage(`Organic waste batch "${item.title || 'Organic Lot'}" scheduled for facility pickup!`);
     setConfirmModal({ isOpen: false, item: null });
   };
+
+  const totalDivertedKg = claimedBatches.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
 
   return (
     <div className="feature-container">
@@ -94,8 +77,7 @@ export default function CompostShell({ initialTab = 'facility-dashboard' }) {
           </div>
           <h1>Composting &amp; Biogas Facility Operations</h1>
           <p className="text-muted">
-            Transforming inedible organic scraps into clean bio-energy and nutrient-dense soil
-            amendment
+            Transforming inedible organic scraps into clean bio-energy and nutrient-dense soil amendment
           </p>
         </div>
       </div>
@@ -106,10 +88,10 @@ export default function CompostShell({ initialTab = 'facility-dashboard' }) {
           style={{
             marginTop: 'var(--space-3)',
             padding: 'var(--space-3)',
-            backgroundColor: 'var(--color-success-bg)',
-            color: 'var(--color-success)',
+            backgroundColor: 'var(--color-success-bg, #ecfdf5)',
+            color: 'var(--color-success, #059669)',
             borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--color-success-border)',
+            border: '1px solid var(--color-success-border, #a7f3d0)',
             display: 'flex',
             alignItems: 'center',
             gap: 'var(--space-2)',
@@ -128,8 +110,7 @@ export default function CompostShell({ initialTab = 'facility-dashboard' }) {
           className={`tab-btn ${activeTab === 'facility-dashboard' ? 'active' : ''}`}
           onClick={() => setActiveTab('facility-dashboard')}
         >
-          Facility Dashboard (
-          {claimedBatches.length > 0 ? `${claimedBatches.length} Active` : 'Overview'})
+          Facility Dashboard ({claimedBatches.length > 0 ? `${claimedBatches.length} Active` : 'Overview'})
         </button>
         <button
           type="button"
@@ -143,7 +124,7 @@ export default function CompostShell({ initialTab = 'facility-dashboard' }) {
           className={`tab-btn ${activeTab === 'processing-history' ? 'active' : ''}`}
           onClick={() => setActiveTab('processing-history')}
         >
-          Processing History
+          Processing History ({claimedBatches.length})
         </button>
       </div>
 
@@ -160,13 +141,13 @@ export default function CompostShell({ initialTab = 'facility-dashboard' }) {
           >
             <div className="card" style={{ padding: 'var(--space-4)' }}>
               <div style={{ color: 'var(--color-muted)', fontSize: 'var(--font-size-label)' }}>
-                Daily Processing Capacity
+                Active Facility Claims
               </div>
               <div style={{ fontSize: '2rem', fontWeight: 800, color: '#0d9488', margin: '4px 0' }}>
-                {processingCapacityKgDay} kg/day
+                {claimedBatches.length} {claimedBatches.length === 1 ? 'batch' : 'batches'}
               </div>
               <div style={{ fontSize: '11px', color: 'var(--color-muted)' }}>
-                Continuous anaerobic digester
+                {claimedBatches.length > 0 ? 'Dispatched for pickup' : 'No active collections'}
               </div>
             </div>
 
@@ -182,10 +163,10 @@ export default function CompostShell({ initialTab = 'facility-dashboard' }) {
                   margin: '4px 0',
                 }}
               >
-                {wasteReceivedMonthKg} kg
+                {totalDivertedKg} kg
               </div>
               <div style={{ fontSize: '11px', color: 'var(--color-muted)' }}>
-                Month-to-date recovery
+                Diverted this session
               </div>
             </div>
 
@@ -201,15 +182,55 @@ export default function CompostShell({ initialTab = 'facility-dashboard' }) {
                   margin: '4px 0',
                 }}
               >
-                {wasteListings.length} batches
+                {wasteListings.length} {wasteListings.length === 1 ? 'batch' : 'batches'}
               </div>
               <div style={{ fontSize: '11px', color: 'var(--color-muted)' }}>
-                Ready for evening dispatch
+                Ready for facility dispatch
               </div>
             </div>
           </div>
 
           <div className="card" style={{ padding: 'var(--space-6)' }}>
+            <h3 style={{ fontSize: 'var(--font-size-card-heading)', margin: '0 0 var(--space-3)' }}>
+              Active Facility Batches
+            </h3>
+            {claimedBatches.length === 0 ? (
+              <EmptyState
+                icon={Recycle}
+                title="No active collections"
+                description="Your facility has not scheduled any organic waste collections yet. Discover available kitchen organics in the discovery tab."
+                actionLabel="Discover Organic Waste"
+                onAction={() => setActiveTab('waste-discovery')}
+              />
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                {claimedBatches.map((item) => (
+                  <div
+                    key={item.id}
+                    style={{
+                      padding: 'var(--space-3)',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--color-border)',
+                      backgroundColor: 'var(--color-surface)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span className="badge badge-success">Dispatched to Facility</span>
+                      <span style={{ fontWeight: 700, color: '#0d9488' }}>
+                        {item.quantity} {item.unit || 'kg'}
+                      </span>
+                    </div>
+                    <div style={{ fontWeight: 600, marginTop: '4px' }}>{item.title || 'Organic Lot'}</div>
+                    <div className="text-muted" style={{ fontSize: '12px' }}>
+                      Location: {item.pickupLocation || item.pickupAddress || 'Campus Waste Bay'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="card" style={{ padding: 'var(--space-6)', marginTop: 'var(--space-4)' }}>
             <h3 style={{ fontSize: 'var(--font-size-card-heading)', margin: '0 0 var(--space-3)' }}>
               Circular Resource Conversion
             </h3>
@@ -226,7 +247,7 @@ export default function CompostShell({ initialTab = 'facility-dashboard' }) {
                 <div>
                   <strong>Biogas Energy Output:</strong>
                   <div className="text-muted">
-                    Generates methane replacement gas for university student union water boilers.
+                    Generates methane replacement gas for community hot water and clean energy.
                   </div>
                 </div>
               </div>
@@ -235,8 +256,7 @@ export default function CompostShell({ initialTab = 'facility-dashboard' }) {
                 <div>
                   <strong>Organic Soil Conditioner:</strong>
                   <div className="text-muted">
-                    High-nitrogen compost supplied to campus botanical landscaping and student
-                    gardens.
+                    High-nitrogen compost supplied to botanical landscaping and community gardens.
                   </div>
                 </div>
               </div>
@@ -248,11 +268,15 @@ export default function CompostShell({ initialTab = 'facility-dashboard' }) {
       {/* Tab 2: Organic Waste Discovery */}
       {activeTab === 'waste-discovery' && (
         <div style={{ marginTop: 'var(--space-5)' }}>
-          {wasteListings.length === 0 ? (
+          {loading ? (
+            <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--color-muted)' }}>
+              Loading organic waste listings...
+            </div>
+          ) : wasteListings.length === 0 ? (
             <EmptyState
               icon={Recycle}
               title="No organic waste batches declared"
-              description="Dining kitchens have not logged post-service plate organics at this hour."
+              description="Dining kitchens and messes have not logged post-service plate organics or kitchen scraps at this hour."
             />
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
@@ -269,17 +293,17 @@ export default function CompostShell({ initialTab = 'facility-dashboard' }) {
                   >
                     <div>
                       <span className="badge badge-info" style={{ marginBottom: '4px' }}>
-                        {item.category}
+                        {item.category || 'Organic Waste'}
                       </span>
                       <h3 style={{ margin: '4px 0', fontSize: '1.15rem' }}>{item.title}</h3>
                       <div className="text-muted" style={{ fontSize: 'var(--font-size-label)' }}>
-                        Donor: <strong>{item.donorOrg}</strong> &bull; Pickup Bay:{' '}
-                        {item.pickupLocation}
+                        Donor Org: <strong>{item.donorOrgName || item.donorOrgId || 'Campus Kitchen'}</strong> &bull; Pickup Bay:{' '}
+                        {item.pickupLocation || item.pickupAddress || 'Waste Dock'}
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0d9488' }}>
-                        {item.quantity} {item.unit}
+                        {item.quantity} {item.unit || 'kg'}
                       </div>
                       <span className="text-muted" style={{ fontSize: '11px' }}>
                         Total organic mass
@@ -302,10 +326,10 @@ export default function CompostShell({ initialTab = 'facility-dashboard' }) {
                     }}
                   >
                     <div>
-                      <strong>Digestion Compatibility:</strong> {item.compatibility}
+                      <strong>Digestion Compatibility:</strong> {item.compatibility || 'Anaerobic Digestion & Composting'}
                     </div>
                     <div>
-                      <span>{item.pickupWindow}</span>
+                      <span>{item.pickupWindow || 'Today'}</span>
                     </div>
                   </div>
 
@@ -335,38 +359,46 @@ export default function CompostShell({ initialTab = 'facility-dashboard' }) {
       {/* Tab 3: Processing History */}
       {activeTab === 'processing-history' && (
         <div style={{ marginTop: 'var(--space-5)' }}>
-          <div className="table-responsive">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Processing Date</th>
-                  <th>Organic Waste Category</th>
-                  <th>Quantity Processed</th>
-                  <th>Method</th>
-                  <th>Resource Yield</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {SAMPLE_PROCESSING_HISTORY.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.date}</td>
-                    <td>
-                      <strong>{item.wasteType}</strong>
-                    </td>
-                    <td>{item.quantity}</td>
-                    <td>
-                      <span className="badge badge-neutral">{item.method}</span>
-                    </td>
-                    <td style={{ color: '#0d9488', fontWeight: 600 }}>{item.yieldOutput}</td>
-                    <td>
-                      <span className="badge badge-verified">Processed</span>
-                    </td>
+          {claimedBatches.length === 0 ? (
+            <EmptyState
+              icon={Recycle}
+              title="No processed batches logged"
+              description="Collections confirmed and processed by this facility will be listed here with resource conversion metrics."
+            />
+          ) : (
+            <div className="table-responsive">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Batch Title</th>
+                    <th>Category</th>
+                    <th>Quantity</th>
+                    <th>Method</th>
+                    <th>Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {claimedBatches.map((item) => (
+                    <tr key={item.id}>
+                      <td>
+                        <strong>{item.title || 'Organic Lot'}</strong>
+                      </td>
+                      <td>{item.category || 'Organic Scraps'}</td>
+                      <td>
+                        {item.quantity} {item.unit || 'kg'}
+                      </td>
+                      <td>
+                        <span className="badge badge-neutral">Composting / Digestion</span>
+                      </td>
+                      <td>
+                        <span className="badge badge-verified">Dispatched</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 
@@ -374,7 +406,7 @@ export default function CompostShell({ initialTab = 'facility-dashboard' }) {
       <ConfirmDialog
         isOpen={confirmModal.isOpen}
         title="Schedule Organic Waste Collection"
-        body={`Accept collection for "${confirmModal.item?.title}" (${confirmModal.item?.quantity} ${confirmModal.item?.unit})? Dedicated sealed organic transport bins required.`}
+        body={`Accept collection for "${confirmModal.item?.title || 'this batch'}" (${confirmModal.item?.quantity || ''} ${confirmModal.item?.unit || 'kg'})? Dedicated sealed organic transport bins required.`}
         confirmLabel="Confirm Collection"
         onConfirm={executeClaim}
         onCancel={() => setConfirmModal({ isOpen: false, item: null })}

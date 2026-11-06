@@ -1,63 +1,46 @@
-import { useState } from 'react';
-import { AlertTriangle, Clock, CheckCircle2, Wheat } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { AlertTriangle, CheckCircle2, Wheat } from 'lucide-react';
+import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { db } from '../../lib/firebase.js';
 import EmptyState from '../../components/common/EmptyState.jsx';
 import ConfirmDialog from '../../components/common/ConfirmDialog.jsx';
 
-const SAMPLE_ANIMAL_FEED_LISTINGS = [
-  {
-    id: 'feed-101',
-    title: 'Fresh Vegetable Trimmings (Cabbage, Carrot, Pumpkin Peels)',
-    donorOrg: 'Central Dining Hall 1 Pre-Prep Cell',
-    category: 'Vegetable Scraps (Clean Pre-Cook)',
-    quantity: 45,
-    unit: 'kg',
-    suitability: 'Dairy Cattle & Goats (FSSAI Animal Feed SOP Qualified)',
-    pickupLocation: 'Kitchen Veg Pre-prep Loading Bay',
-    pickupWindow: '14:00 – 17:00 Today',
-    status: 'published',
-  },
-  {
-    id: 'feed-102',
-    title: 'Dry Wheat Bran & Clean Bread Ends',
-    donorOrg: 'Hostel Bakery Unit',
-    category: 'Clean Bakery Grain Trimmings',
-    quantity: 30,
-    unit: 'kg',
-    suitability: 'Dairy Cattle Feed Concentrate',
-    pickupLocation: 'Bakery Dispatch Counter',
-    pickupWindow: '16:00 – 18:30 Today',
-    status: 'published',
-  },
-];
-
-const SAMPLE_FARM_HISTORY = [
-  {
-    id: 'farm-hist-01',
-    title: 'Clean Cauliflower & Spinach Trimmings',
-    date: 'Nov 02, 2026',
-    quantity: '50 kg',
-    donor: 'Central Mess 3',
-    status: 'completed',
-  },
-  {
-    id: 'farm-hist-02',
-    title: 'Unhusked Rice & Grain Siftings',
-    date: 'Oct 28, 2026',
-    quantity: '35 kg',
-    donor: 'Hostel Storage Cell',
-    status: 'completed',
-  },
-];
-
 export default function FarmShell({ initialTab = 'feed-dashboard' }) {
   const [activeTab, setActiveTab] = useState(initialTab);
-  const [feedListings, setFeedListings] = useState(SAMPLE_ANIMAL_FEED_LISTINGS);
+  const [feedListings, setFeedListings] = useState([]);
   const [claimedFeed, setClaimedFeed] = useState([]);
   const [confirmClaimModal, setConfirmClaimModal] = useState({ isOpen: false, item: null });
   const [successMessage, setSuccessMessage] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const animalCount = 38; // Dairy cattle head count
-  const monthlyFeedReceivedKg = 245;
+  // Live Firestore fetch for animal-route listings
+  useEffect(() => {
+    let isMounted = true;
+    async function loadFeedListings() {
+      try {
+        setLoading(true);
+        const q = query(
+          collection(db, 'listings'),
+          where('routeTier', '==', 'animal'),
+          where('status', '==', 'published'),
+          limit(25)
+        );
+        const snap = await getDocs(q);
+        if (isMounted) {
+          const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+          setFeedListings(docs);
+        }
+      } catch (err) {
+        console.warn('[FarmShell] Live animal-feed listings fetch:', err.message);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+    loadFeedListings();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleClaim = (item) => {
     setConfirmClaimModal({ isOpen: true, item });
@@ -71,6 +54,8 @@ export default function FarmShell({ initialTab = 'feed-dashboard' }) {
     setSuccessMessage(`Feed batch "${item.title}" reserved for dairy collection!`);
     setConfirmClaimModal({ isOpen: false, item: null });
   };
+
+  const totalClaimedKg = claimedFeed.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
 
   return (
     <div className="feature-container">
@@ -86,14 +71,10 @@ export default function FarmShell({ initialTab = 'feed-dashboard' }) {
             }}
           >
             <span className="badge badge-warning">Tier 2 Animal Feed Recovery</span>
-            <span className="text-muted" style={{ fontSize: '11px' }}>
-              Farm License: DL-FARM-2023-991
-            </span>
           </div>
           <h1>Cattle Farm &amp; Feed Management</h1>
           <p className="text-muted">
-            Qualified livestock feed recovery &bull; Segregated clean grain &amp; vegetable
-            feedstock
+            Qualified livestock feed recovery &bull; Segregated clean grain &amp; vegetable feedstock
           </p>
         </div>
       </div>
@@ -133,14 +114,13 @@ export default function FarmShell({ initialTab = 'feed-dashboard' }) {
           style={{
             marginTop: 'var(--space-3)',
             padding: 'var(--space-3)',
-            backgroundColor: 'var(--color-success-bg)',
-            color: 'var(--color-success)',
+            backgroundColor: 'var(--color-success-bg, #ecfdf5)',
+            border: '1px solid var(--color-success, #059669)',
             borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--color-success-border)',
+            color: 'var(--color-success, #059669)',
             display: 'flex',
             alignItems: 'center',
             gap: 'var(--space-2)',
-            fontSize: 'var(--font-size-label)',
           }}
         >
           <CheckCircle2 size={16} />
@@ -186,7 +166,7 @@ export default function FarmShell({ initialTab = 'feed-dashboard' }) {
           >
             <div className="card" style={{ padding: 'var(--space-4)' }}>
               <div style={{ color: 'var(--color-muted)', fontSize: 'var(--font-size-label)' }}>
-                Livestock Head Count
+                Active Feed Claims
               </div>
               <div
                 style={{
@@ -196,16 +176,16 @@ export default function FarmShell({ initialTab = 'feed-dashboard' }) {
                   margin: '4px 0',
                 }}
               >
-                {animalCount} cattle
+                {claimedFeed.length} {claimedFeed.length === 1 ? 'batch' : 'batches'}
               </div>
               <div style={{ fontSize: '11px', color: 'var(--color-muted)' }}>
-                Registered dairy cows &amp; calves
+                {claimedFeed.length > 0 ? 'Pending dairy collection' : 'No active claims'}
               </div>
             </div>
 
             <div className="card" style={{ padding: 'var(--space-4)' }}>
               <div style={{ color: 'var(--color-muted)', fontSize: 'var(--font-size-label)' }}>
-                Monthly Feed Rescued
+                Feed Claimed This Session
               </div>
               <div
                 style={{
@@ -215,10 +195,10 @@ export default function FarmShell({ initialTab = 'feed-dashboard' }) {
                   margin: '4px 0',
                 }}
               >
-                {monthlyFeedReceivedKg} kg
+                {totalClaimedKg} kg
               </div>
               <div style={{ fontSize: '11px', color: 'var(--color-muted)' }}>
-                Diversion to cattle nutrition
+                Diverted to cattle nutrition
               </div>
             </div>
 
@@ -234,43 +214,52 @@ export default function FarmShell({ initialTab = 'feed-dashboard' }) {
                   margin: '4px 0',
                 }}
               >
-                {feedListings.length} batches
+                {feedListings.length} {feedListings.length === 1 ? 'batch' : 'batches'}
               </div>
               <div style={{ fontSize: '11px', color: 'var(--color-muted)' }}>
-                Ready for pickup today
+                Ready for verified pickup
               </div>
             </div>
           </div>
 
           <div className="card" style={{ padding: 'var(--space-6)' }}>
             <h3 style={{ fontSize: 'var(--font-size-card-heading)', margin: '0 0 var(--space-3)' }}>
-              Farm Profile &amp; Feed Specifications
+              Active Farm Reservations
             </h3>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-                gap: 'var(--space-4)',
-                fontSize: 'var(--font-size-body)',
-              }}
-            >
-              <div>
-                <strong>Farm Facility Name:</strong>
-                <div className="text-muted">Shree Krishna Dairy &amp; Gaushala</div>
+            {claimedFeed.length === 0 ? (
+              <EmptyState
+                icon={Wheat}
+                title="No active feed claims"
+                description="Your farm has not claimed any feed batches yet. Browse qualified animal feed in the discovery tab to schedule a collection."
+                actionLabel="Discover Available Feed"
+                onAction={() => setActiveTab('feed-discovery')}
+              />
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                {claimedFeed.map((item) => (
+                  <div
+                    key={item.id}
+                    style={{
+                      padding: 'var(--space-3)',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--color-border)',
+                      backgroundColor: 'var(--color-surface)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span className="badge badge-success">Reserved for Gaushala Collection</span>
+                      <span className="text-muted" style={{ fontSize: '12px' }}>
+                        {item.quantity} {item.unit || 'kg'}
+                      </span>
+                    </div>
+                    <h4 style={{ margin: '6px 0 2px' }}>{item.title}</h4>
+                    <p className="text-muted" style={{ margin: 0, fontSize: '13px' }}>
+                      {item.location || 'Loading Bay'}
+                    </p>
+                  </div>
+                ))}
               </div>
-              <div>
-                <strong>Location:</strong>
-                <div className="text-muted">
-                  East Outskirts Rural Cluster &bull; 4.8 km from Campus
-                </div>
-              </div>
-              <div>
-                <strong>Permitted Feed Categories:</strong>
-                <div className="text-muted">
-                  Vegetable peels, grain screenings, clean bakery end-crusts
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       )}
@@ -278,90 +267,48 @@ export default function FarmShell({ initialTab = 'feed-dashboard' }) {
       {/* Tab 2: Feed Discovery */}
       {activeTab === 'feed-discovery' && (
         <div style={{ marginTop: 'var(--space-5)' }}>
-          {feedListings.length === 0 ? (
+          {loading ? (
+            <p className="text-muted">Loading qualified animal feed listings...</p>
+          ) : feedListings.length === 0 ? (
             <EmptyState
               icon={Wheat}
-              title="No qualified animal feed available"
-              description="All assessed livestock feed batches for today have been claimed or none are currently declared."
+              title="No animal-feed qualified listings currently available"
+              description="Surplus food independently assessed as suitable for livestock feed will appear here when published by partner kitchens."
             />
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-              {feedListings.map((item) => (
-                <div key={item.id} className="card" style={{ padding: 'var(--space-5)' }}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'flex-start',
-                      flexWrap: 'wrap',
-                      gap: 'var(--space-2)',
-                    }}
-                  >
-                    <div>
-                      <span className="badge badge-warning" style={{ marginBottom: '4px' }}>
-                        {item.category}
-                      </span>
-                      <h3 style={{ margin: '4px 0', fontSize: '1.15rem' }}>{item.title}</h3>
-                      <div className="text-muted" style={{ fontSize: 'var(--font-size-label)' }}>
-                        Donor: <strong>{item.donorOrg}</strong> &bull; Location:{' '}
-                        {item.pickupLocation}
-                      </div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div
-                        style={{
-                          fontSize: '1.5rem',
-                          fontWeight: 800,
-                          color: 'var(--color-primary)',
-                        }}
-                      >
-                        {item.quantity} {item.unit}
-                      </div>
-                      <span className="text-muted" style={{ fontSize: '11px' }}>
-                        Feedstock quantity
+              {feedListings.map((f) => (
+                <div
+                  key={f.id}
+                  className="card"
+                  style={{
+                    padding: 'var(--space-4)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: 'var(--space-3)',
+                  }}
+                >
+                  <div style={{ maxWidth: '600px' }}>
+                    <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+                      <span className="badge badge-warning">Tier 2 Feed</span>
+                      <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-primary)' }}>
+                        {f.quantity} {f.unit || 'kg'}
                       </span>
                     </div>
+                    <h3 style={{ margin: '4px 0 2px', fontSize: '1.05rem' }}>{f.title}</h3>
+                    <p className="text-muted" style={{ margin: 0, fontSize: '13px' }}>
+                      {f.storageDeclaration || 'Clean food-grade storage'} &bull; Location: {f.location || 'Kitchen Bay'}
+                    </p>
                   </div>
-
-                  <div
-                    style={{
-                      marginTop: 'var(--space-3)',
-                      padding: 'var(--space-2) var(--space-3)',
-                      borderRadius: 'var(--radius-sm)',
-                      backgroundColor: 'var(--color-canvas)',
-                      fontSize: '12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
-                      gap: 'var(--space-2)',
-                    }}
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => handleClaim(f)}
                   >
-                    <div>
-                      <strong>Animal Suitability:</strong> {item.suitability}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-                      <Clock size={13} color="var(--color-muted)" />
-                      <span>Window: {item.pickupWindow}</span>
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      marginTop: 'var(--space-4)',
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                    }}
-                  >
-                    <button
-                      type="button"
-                      className="btn btn-primary btn-sm"
-                      onClick={() => handleClaim(item)}
-                    >
-                      <CheckCircle2 size={14} />
-                      <span>Accept &amp; Schedule Feed Pickup</span>
-                    </button>
-                  </div>
+                    Claim for Farm
+                  </button>
                 </div>
               ))}
             </div>
@@ -369,46 +316,28 @@ export default function FarmShell({ initialTab = 'feed-dashboard' }) {
         </div>
       )}
 
-      {/* Tab 3: Farm History */}
+      {/* Tab 3: Farm Collection History */}
       {activeTab === 'farm-history' && (
         <div style={{ marginTop: 'var(--space-5)' }}>
-          <div className="table-responsive">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Collection Date</th>
-                  <th>Feed Description</th>
-                  <th>Quantity Collected</th>
-                  <th>Donor Facility</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {SAMPLE_FARM_HISTORY.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.date}</td>
-                    <td>
-                      <strong>{item.title}</strong>
-                    </td>
-                    <td>{item.quantity}</td>
-                    <td>{item.donor}</td>
-                    <td>
-                      <span className="badge badge-verified">Handover Completed</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <EmptyState
+            icon={Wheat}
+            title="No past collection records"
+            description="Verified historical feed handovers and animal nutrition diversion logs will appear here after collection completion."
+          />
         </div>
       )}
 
-      {/* Confirm Dialog */}
+      {/* Confirm Claim Dialog */}
       <ConfirmDialog
         isOpen={confirmClaimModal.isOpen}
-        title="Confirm Animal Feed Collection"
-        body={`Are you sure you want to accept "${confirmClaimModal.item?.title}" (${confirmClaimModal.item?.quantity} ${confirmClaimModal.item?.unit})? You agree to transport in covered feed sacks before ${confirmClaimModal.item?.pickupWindow}.`}
-        confirmLabel="Accept Feed Batch"
+        title="Confirm Farm Feed Claim"
+        message={
+          confirmClaimModal.item
+            ? `Are you sure you want to claim "${confirmClaimModal.item.title}" (${confirmClaimModal.item.quantity} ${confirmClaimModal.item.unit || 'kg'}) for verified livestock feeding? You commit to collecting with clean transport containers.`
+            : ''
+        }
+        confirmText="Confirm Claim"
+        cancelText="Cancel"
         onConfirm={executeClaim}
         onCancel={() => setConfirmClaimModal({ isOpen: false, item: null })}
       />

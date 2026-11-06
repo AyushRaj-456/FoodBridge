@@ -43,6 +43,11 @@ service cloud.firestore {
         getOrg(orgId).status == 'approved';
     }
 
+    function isOrgNotSuspended(orgId) {
+      return exists(/databases/$(database)/documents/organisations/$(orgId)) &&
+        getOrg(orgId).status != 'suspended';
+    }
+
     // ==========================================
     // USERS COLLECTION
     // ==========================================
@@ -76,11 +81,12 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated() &&
         request.resource.data.createdBy == request.auth.uid &&
-        request.resource.data.status == 'pending';
-      // Only admin can update organisation approval status
+        request.resource.data.status == 'pending' &&
+        request.resource.data.type in ['donor', 'recipient', 'farm', 'facility'];
+      // Only admin can update organisation approval status; members update profile only
       allow update: if isAdmin() || (
         isOrgMember(orgId) &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'addressText', 'updatedAt'])
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'addressText', 'contactPerson', 'contactPhone', 'contactEmail', 'updatedAt'])
       );
       allow delete: if false;
     }
@@ -120,7 +126,11 @@ service cloud.firestore {
         isApprovedOrg(request.resource.data.donorOrgId) &&
         request.resource.data.createdBy == request.auth.uid &&
         request.resource.data.status in ['draft', 'published'] &&
-        request.resource.data.activeClaimId == null;
+        request.resource.data.activeClaimId == null &&
+        request.resource.data.quantity > 0 &&
+        request.resource.data.quantity <= 5000 &&
+        request.resource.data.unit in ['kg', 'portions', 'litres', 'boxes', 'packets', 'trays'] &&
+        request.resource.data.routeTier in ['human', 'animal', 'organic'];
 
       // Donors manage own listings; recipient can set claimed during atomic claim
       allow update: if isAuthenticated() && (
@@ -215,7 +225,8 @@ service cloud.firestore {
     // ==========================================
     match /notifications/{notificationId} {
       allow read: if isOwner(resource.data.userId);
-      allow create: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+        request.resource.data.createdAt == request.time;
       allow update: if isOwner(resource.data.userId) &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readAt']);
       allow delete: if isOwner(resource.data.userId);
@@ -259,4 +270,3 @@ service cloud.firestore {
     }
   }
 }
-

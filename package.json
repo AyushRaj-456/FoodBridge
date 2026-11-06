@@ -14,8 +14,15 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:rules": "vitest run src/test/rules",
+    "emulators": "firebase emulators:start --only auth,firestore,hosting",
     "emulators:start": "firebase emulators:start --only auth,firestore,hosting",
-    "emulators:exec": "firebase emulators:exec --only auth,firestore \"npm test\""
+    "emulators:exec": "firebase emulators:exec --only auth,firestore \"npm test\"",
+    "demo:seed": "node scripts/seed-demo.js",
+    "demo:reset": "node scripts/reset-demo.js"
+  },
+  "engines": {
+    "node": ">=18.0.0 <=22.x"
   },
   "dependencies": {
     "firebase": "^11.0.2",

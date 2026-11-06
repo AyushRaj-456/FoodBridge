@@ -1,11 +1,25 @@
-import { Truck, ShieldCheck, Clock, PlusCircle, Award } from 'lucide-react';
+import { ShieldCheck, PlusCircle, Award, Compass, Truck } from 'lucide-react';
+import EmptyState from '../../components/common/EmptyState.jsx';
 
 export default function NgoDashboardView({
   orgStatus = 'approved',
+  orgName = 'Welfare Partner NGO',
+  orgRegNumber = '',
+  availableListings = [],
+  claims = [],
   onNavigateTab,
   onOpenDemandRequest,
   onOpenDistributionProof,
 }) {
+  const activeClaims = claims.filter((c) => ['claimed', 'donor_confirmed', 'recipient_confirmed'].includes(c.status));
+  const completedClaims = claims.filter((c) => c.status === 'completed');
+
+  const availableCount = availableListings.length;
+  const pendingCount = activeClaims.length;
+  const completedCount = completedClaims.length;
+  const mealsReceived = completedClaims.reduce((sum, c) => sum + (Number(c.portions) || Math.round((Number(c.actualQuantity) || 0) * 2.5)), 0);
+  const foodRescuedKg = completedClaims.reduce((sum, c) => sum + (Number(c.actualQuantity) || 0), 0);
+
   return (
     <div className="ngo-dashboard">
       <div
@@ -31,16 +45,17 @@ export default function NgoDashboardView({
               <ShieldCheck size={13} />{' '}
               {orgStatus === 'approved' ? 'Verified Welfare Organization' : `Status: ${orgStatus}`}
             </span>
-            <span className="text-muted" style={{ fontSize: '11px' }}>
-              Registration: MH/2021/0284912
-            </span>
+            {orgRegNumber && (
+              <span className="text-muted" style={{ fontSize: '11px' }}>
+                Registration: {orgRegNumber}
+              </span>
+            )}
           </div>
           <h1 style={{ fontSize: 'var(--font-size-title-desktop)', margin: 0 }}>
-            City Care Welfare NGO &bull; Operations Portal
+            {orgName} &bull; Operations Portal
           </h1>
           <p className="text-muted" style={{ fontSize: 'var(--font-size-body)', marginTop: '4px' }}>
-            Discover inspected hot-held batches, coordinate insulated pickups, and record
-            distributions.
+            Discover inspected surplus food batches, coordinate insulated pickups, and record distributions.
           </p>
         </div>
 
@@ -56,7 +71,7 @@ export default function NgoDashboardView({
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI Cards — Authoritative real-time calculations */}
       <div
         style={{
           display: 'grid',
@@ -77,9 +92,9 @@ export default function NgoDashboardView({
               margin: '4px 0',
             }}
           >
-            2 batches
+            {availableCount} {availableCount === 1 ? 'batch' : 'batches'}
           </div>
-          <div style={{ fontSize: '11px', color: 'var(--color-muted)' }}>Within 5 km radius</div>
+          <div style={{ fontSize: '11px', color: 'var(--color-muted)' }}>Within your local zone</div>
         </div>
 
         <div className="card" style={{ padding: 'var(--space-4)' }}>
@@ -94,10 +109,10 @@ export default function NgoDashboardView({
               margin: '4px 0',
             }}
           >
-            1 pickup
+            {pendingCount} {pendingCount === 1 ? 'pickup' : 'pickups'}
           </div>
           <div style={{ fontSize: '11px', color: 'var(--color-muted)' }}>
-            Central Mess 3 Loading Bay
+            {pendingCount > 0 ? 'Awaiting collection' : 'No active pickups'}
           </div>
         </div>
 
@@ -113,9 +128,9 @@ export default function NgoDashboardView({
               margin: '4px 0',
             }}
           >
-            14
+            {completedCount}
           </div>
-          <div style={{ fontSize: '11px', color: 'var(--color-muted)' }}>Lifetime handovers</div>
+          <div style={{ fontSize: '11px', color: 'var(--color-muted)' }}>Lifetime verified handovers</div>
         </div>
 
         <div className="card" style={{ padding: 'var(--space-4)' }}>
@@ -130,7 +145,7 @@ export default function NgoDashboardView({
               margin: '4px 0',
             }}
           >
-            787
+            {mealsReceived}
           </div>
           <div style={{ fontSize: '11px', color: 'var(--color-muted)' }}>
             Served to verified beneficiaries
@@ -139,18 +154,18 @@ export default function NgoDashboardView({
 
         <div className="card" style={{ padding: 'var(--space-4)' }}>
           <div style={{ color: 'var(--color-muted)', fontSize: 'var(--font-size-label)' }}>
-            Monthly Impact
+            Total Food Rescued
           </div>
           <div style={{ fontSize: '2rem', fontWeight: 800, color: '#0d9488', margin: '4px 0' }}>
-            315 kg
+            {foodRescuedKg} kg
           </div>
           <div style={{ fontSize: '11px', color: 'var(--color-muted)' }}>
-            Rescued in November 2026
+            Diverted from waste
           </div>
         </div>
       </div>
 
-      {/* Main Sections */}
+      {/* Main Sections with Live Data and Honest Empty States */}
       <div
         style={{
           display: 'grid',
@@ -181,80 +196,57 @@ export default function NgoDashboardView({
             </button>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-            <div
-              style={{
-                padding: 'var(--space-3)',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--color-border)',
-                backgroundColor: 'var(--color-surface-hover)',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                }}
-              >
-                <div>
-                  <span className="badge badge-success" style={{ marginBottom: '2px' }}>
-                    18 kg &bull; ~55 Portions
-                  </span>
-                  <h4 style={{ margin: '2px 0', fontSize: '1rem' }}>
-                    Steamed Rice &amp; Yellow Dal Tadka
-                  </h4>
-                  <div className="text-muted" style={{ fontSize: '12px' }}>
-                    North Campus Mess 3 &bull; 1.2 km away
+          {availableListings.length === 0 ? (
+            <EmptyState
+              icon={Compass}
+              title="No surplus food available right now"
+              description="New donations from partner messes and kitchens will appear here automatically as soon as they are published."
+              actionLabel="Explore Feed Explorer"
+              onAction={() => onNavigateTab('available-feed')}
+            />
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+              {availableListings.slice(0, 3).map((opp) => (
+                <div
+                  key={opp.id}
+                  style={{
+                    padding: 'var(--space-3)',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid var(--color-border)',
+                    backgroundColor: 'var(--color-surface-hover)',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                    }}
+                  >
+                    <div>
+                      <span className="badge badge-success" style={{ marginBottom: '2px' }}>
+                        {opp.quantity} {opp.unit} &bull; ~{opp.portions} Portions
+                      </span>
+                      <h4 style={{ margin: '2px 0', fontSize: '1rem' }}>{opp.title}</h4>
+                      <div className="text-muted" style={{ fontSize: '12px' }}>
+                        {opp.location || 'Local Donor'}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      onClick={() => onNavigateTab('available-feed')}
+                    >
+                      Inspect &amp; Claim
+                    </button>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm"
-                  onClick={() => onNavigateTab('available-feed')}
-                >
-                  Inspect &amp; Claim
-                </button>
-              </div>
+              ))}
             </div>
-
-            <div
-              style={{
-                padding: 'var(--space-3)',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--color-border)',
-                backgroundColor: 'var(--color-surface-hover)',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                }}
-              >
-                <div>
-                  <span className="badge badge-success" style={{ marginBottom: '2px' }}>
-                    12 kg &bull; ~35 Portions
-                  </span>
-                  <h4 style={{ margin: '2px 0', fontSize: '1rem' }}>Vegetable Pulao &amp; Raita</h4>
-                  <div className="text-muted" style={{ fontSize: '12px' }}>
-                    Engineering Cafeteria &bull; 2.4 km away
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm"
-                  onClick={() => onNavigateTab('available-feed')}
-                >
-                  Inspect &amp; Claim
-                </button>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
-        {/* Active Claims & Handover Status */}
+        {/* Active Claim Coordination */}
         <div className="card" style={{ padding: 'var(--space-6)' }}>
           <div
             style={{
@@ -265,58 +257,56 @@ export default function NgoDashboardView({
             }}
           >
             <h3 style={{ fontSize: 'var(--font-size-card-heading)', margin: 0 }}>
-              Active Pickup in Progress
+              Active Claim Coordination
             </h3>
-            <span className="badge badge-warning">Awaiting Collection</span>
-          </div>
-
-          <div
-            style={{
-              padding: 'var(--space-4)',
-              backgroundColor: 'var(--color-canvas)',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--color-border)',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--space-2)',
-                marginBottom: 'var(--space-2)',
-              }}
-            >
-              <Clock size={16} color="var(--color-accent)" />
-              <strong style={{ fontSize: '14px' }}>Pickup Window: 20:30 &ndash; 22:00</strong>
-            </div>
-            <div
-              style={{
-                fontSize: 'var(--font-size-label)',
-                color: 'var(--color-text)',
-                marginBottom: 'var(--space-2)',
-              }}
-            >
-              <strong>Unlocked Address:</strong> Kitchen Loading Bay, Gate 4, Central Mess 3
-            </div>
-            <div
-              style={{
-                fontSize: 'var(--font-size-label)',
-                color: 'var(--color-muted)',
-                marginBottom: 'var(--space-3)',
-              }}
-            >
-              <strong>Mess Supervisor:</strong> Mr. Raman (+91 94450 99887)
-            </div>
             <button
               type="button"
-              className="btn btn-secondary btn-sm"
-              style={{ width: '100%' }}
-              onClick={() => onNavigateTab('handover-confirm')}
+              className="btn-quiet"
+              style={{ fontSize: 'var(--font-size-label)' }}
+              onClick={() => onNavigateTab('my-claims')}
             >
-              <span>Complete Bilateral Handover</span>
-              <Truck size={14} />
+              View All Claims &rarr;
             </button>
           </div>
+
+          {activeClaims.length === 0 ? (
+            <EmptyState
+              icon={Truck}
+              title="No pending collections"
+              description="You have no active claims in progress. When you claim an available surplus listing, pickup coordination details will appear here."
+              actionLabel="Find Food to Claim"
+              onAction={() => onNavigateTab('available-feed')}
+            />
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+              {activeClaims.map((claim) => (
+                <div
+                  key={claim.id}
+                  style={{
+                    padding: 'var(--space-3)',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid var(--color-border)',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <strong>{claim.title || `Claim #${claim.id.slice(-6)}`}</strong>
+                    <span className="badge badge-warning">Awaiting Collection</span>
+                  </div>
+                  <p className="text-muted" style={{ fontSize: '12px', margin: '4px 0' }}>
+                    {claim.quantity}
+                  </p>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    style={{ marginTop: 'var(--space-2)' }}
+                    onClick={() => onNavigateTab('handover-confirm')}
+                  >
+                    Confirm Handover
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,0 +1,57 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid));
+    }
+
+    function isOrgMember(orgId) {
+      return isAuthenticated() &&
+        firestore.exists(/databases/(default)/documents/memberships/$(orgId + "_" + request.auth.uid)) &&
+        firestore.get(/databases/(default)/documents/memberships/$(orgId + "_" + request.auth.uid)).data.status == 'active';
+    }
+
+    function isValidFileSize() {
+      return request.resource.size < 5 * 1024 * 1024; // 5MB limit
+    }
+
+    function isValidDocType() {
+      return request.resource.contentType.matches('application/pdf') ||
+             request.resource.contentType.matches('image/jpeg') ||
+             request.resource.contentType.matches('image/png') ||
+             request.resource.contentType.matches('image/webp');
+    }
+
+    // ==========================================
+    // ORGANISATION VERIFICATION DOCUMENTS
+    // Private: Accessible only to Org Members and Platform Administrators
+    // ==========================================
+    match /organisations/{orgId}/verification/{fileName} {
+      allow read: if isOrgMember(orgId) || isAdmin();
+      allow create: if isOrgMember(orgId) && isValidFileSize() && isValidDocType();
+      allow update, delete: if isAdmin();
+    }
+
+    // ==========================================
+    // PUBLIC FOOD LISTING PHOTOGRAPHS (OPTIONAL)
+    // ==========================================
+    match /listings/{listingId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidFileSize() && isValidDocType();
+      allow update, delete: if isAdmin();
+    }
+
+    // ==========================================
+    // DEFAULT DENY-BY-DEFAULT
+    // ==========================================
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -18,11 +18,15 @@ export default function DonorDashboardView({
   const publishedListings = listings.filter((l) => l.status === 'published');
   const claimedListings = listings.filter((l) => l.status === 'claimed');
 
-  // Hardened demo / historical figures
-  const totalDonations = 18;
-  const mealsRedistributed = 787;
-  const foodRescuedKg = 315;
-  const completedPickups = 16;
+  // Real-time metrics computed directly from authoritative Firestore records
+  const completedListings = listings.filter((l) => l.status === 'completed');
+  const completedPickups = completedListings.length;
+  const foodRescuedKg = completedListings.reduce((sum, l) => sum + (Number(l.quantity) || 0), 0);
+  const mealsRedistributed = completedListings.reduce(
+    (sum, l) => sum + (Number(l.portions) || Math.round((Number(l.quantity) || 0) * 2.5)),
+    0
+  );
+  const totalDonations = listings.length;
 
   return (
     <div className="donor-dashboard">
